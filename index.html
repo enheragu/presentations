@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Presentaciones · Enrique Heredia-Aguado</title>
+<meta name="description" content="Índice de presentaciones (decks HTML autocontenidos). Enrique Heredia-Aguado — UMH de Elche.">
+<style>
+  /* Tokens tomados del tool-pages-theme (mismos que mlv-tools / psychometric / image-tools) */
+  :root{
+    --clr-bg:#f4f6f9; --clr-surface:#ffffff; --clr-border:#dde1e7;
+    --clr-text:#3a4658; --clr-muted:#6e7681; --clr-primary:#2f6fdb; --clr-primary-h:#8250df;
+    --shadow:0 1px 4px rgba(0,0,0,.10); --shadow-hover:0 6px 20px rgba(0,0,0,.12);
+    --txt-lh-relaxed:1.45;
+    --font: "Aptos","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    --mono: ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --clr-bg:#0d1117; --clr-surface:#161b22; --clr-border:#30363d;
+      --clr-text:#e6edf3; --clr-muted:#9aa4b0; --clr-primary:#58a6ff; --clr-primary-h:#bc8cff;
+      --shadow:0 1px 4px rgba(0,0,0,.4); --shadow-hover:0 8px 26px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --clr-bg:#0d1117; --clr-surface:#161b22; --clr-border:#30363d;
+    --clr-text:#e6edf3; --clr-muted:#9aa4b0; --clr-primary:#58a6ff; --clr-primary-h:#bc8cff;
+    --shadow:0 1px 4px rgba(0,0,0,.4); --shadow-hover:0 8px 26px rgba(0,0,0,.5);
+  }
+  :root[data-theme="light"]{
+    --clr-bg:#f4f6f9; --clr-surface:#ffffff; --clr-border:#dde1e7;
+    --clr-text:#3a4658; --clr-muted:#6e7681; --clr-primary:#2f6fdb; --clr-primary-h:#8250df;
+    --shadow:0 1px 4px rgba(0,0,0,.10); --shadow-hover:0 6px 20px rgba(0,0,0,.12);
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; }
+  body{
+    min-height:100vh; background:var(--clr-bg); color:var(--clr-text);
+    font-family:var(--font); line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column; align-items:center;
+    padding:clamp(2.2rem,7vh,4.5rem) 1.1rem 0;
+  }
+  .shell{ width:100%; max-width:960px; }
+
+  /* Cabecera */
+  header{ margin-bottom:clamp(1.6rem,4vh,2.6rem); }
+  .kicker{
+    margin:0 0 .5rem; font-family:var(--mono);
+    font-size:.76rem; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--clr-primary); font-weight:600;
+  }
+  h1{
+    margin:0; font-weight:700; letter-spacing:-.015em; line-height:1.08;
+    font-size:clamp(1.9rem,5.2vw,2.9rem); color:var(--clr-text);
+  }
+  h1 .dot{ color:var(--clr-primary-h); }
+  .subtitle{
+    margin:.6rem 0 0; color:var(--clr-muted);
+    font-size:clamp(.98rem,2.2vw,1.12rem); max-width:56ch;
+  }
+  .subtitle kbd{
+    font-family:var(--mono); font-size:.82em; padding:.05em .4em; margin:0 .1em;
+    border:1px solid var(--clr-border); border-bottom-width:2px; border-radius:4px;
+    background:var(--clr-surface); color:var(--clr-text);
+  }
+
+  /* Galería (patrón .tools-grid / .tool-card del theme; cards algo más pequeñas) */
+  .tools-grid{
+    display:grid; gap:.95rem;
+    grid-template-columns:repeat(auto-fill, minmax(248px, 300px));
+    justify-content:start;
+  }
+  .tool-card{
+    display:block; text-decoration:none; color:inherit;
+    border:1px solid var(--clr-border); border-radius:10px; overflow:hidden;
+    background:var(--clr-surface); box-shadow:var(--shadow);
+    transition:transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+  }
+  .tool-card:hover{ transform:translateY(-3px); border-color:var(--clr-primary); box-shadow:var(--shadow-hover); }
+  .tool-card:focus-visible{ outline:none; box-shadow:0 0 0 2px color-mix(in oklab, var(--clr-primary) 45%, transparent); }
+  .tool-cover{
+    width:100%; aspect-ratio:1200 / 630; object-fit:cover; display:block;
+    border-bottom:1px solid var(--clr-border); background:var(--clr-bg);
+  }
+  .tool-content{ padding:.72rem .8rem .82rem; }
+  .tool-meta{
+    display:flex; flex-wrap:wrap; gap:.36rem .5rem; align-items:center;
+    font-size:.72rem; color:var(--clr-muted); margin-bottom:.35rem;
+  }
+  .tool-tag{
+    font-family:var(--mono); font-size:.66rem; font-weight:600; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--clr-primary);
+    padding:.08em .42em; border-radius:4px;
+    border:1px solid color-mix(in oklab, var(--clr-primary) 42%, var(--clr-border));
+    background:color-mix(in oklab, var(--clr-primary) 9%, var(--clr-surface));
+  }
+  .tool-title{
+    margin:0; font-size:1.02rem; font-weight:700; line-height:1.18; color:var(--clr-primary);
+  }
+  .tool-desc{
+    margin:.3rem 0 0; font-size:.86rem; color:var(--clr-muted); line-height:var(--txt-lh-relaxed);
+  }
+  .tool-desc .me{ color:var(--clr-text); font-weight:600; }
+
+  footer{
+    width:100%; max-width:960px; margin-top:auto;
+    padding:2.6rem 0 1.6rem; color:var(--clr-muted); font-size:.82rem;
+    display:flex; flex-wrap:wrap; gap:.4rem 1rem; align-items:center;
+  }
+  footer a{ color:var(--clr-primary); text-decoration:none; }
+  footer a:hover{ text-decoration:underline; }
+  .sep{ opacity:.4; }
+
+  @media (max-width:560px){
+    .tools-grid{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <p class="kicker">Presentaciones</p>
+      <h1>Charlas &amp; decks<span class="dot">.</span></h1>
+      <p class="subtitle">Decks en HTML autocontenido. Navega con <kbd>←</kbd> <kbd>→</kbd>, <kbd>F</kbd> para pantalla completa.</p>
+    </header>
+
+    <main>
+      <div class="tools-grid">
+
+        <a class="tool-card" href="2026_07_8_AEMCCO_ALMERIA/">
+          <img class="tool-cover" src="assets/covers/aemcco.png" alt="Portada del deck — Que no te engañe el azar (XIX AEMCCO)">
+          <div class="tool-content">
+            <div class="tool-meta">
+              <span class="tool-tag">Charla</span>
+              <span>7–9 Jul 2026</span><span class="sep">·</span><span>XIX AEMCCO · Almería</span>
+            </div>
+            <h3 class="tool-title">Que no te engañe el azar</h3>
+            <p class="tool-desc">Cómo impacta la aleatoriedad en el diseño de redes neuronales.
+            <span class="me">Heredia-Aguado</span>, Rujano, Valiente, Gil.</p>
+          </div>
+        </a>
+
+      </div>
+    </main>
+  </div>
+
+  <footer>
+    <span>Enrique Heredia-Aguado — UMH de Elche</span>
+    <span class="sep">·</span>
+    <a href="https://enheragu.github.io/mlv-tools/">mlv-tools</a>
+    <span class="sep">·</span>
+    <a href="https://github.com/enheragu/presentations">GitHub</a>
+  </footer>
+</body>
+</html>
