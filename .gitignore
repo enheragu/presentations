@@ -1,0 +1,22 @@
+# ── Repo de presentaciones (GitHub Pages) · qué NO subir ──────────
+# Reglas sin "/" → aplican en CUALQUIER subcarpeta de presentación.
+
+# Notas del ponente (guion PRIVADO) — en Pages sería visible por URL.
+guion.md
+
+# Plantillas originales (p. ej. el PNG del congreso, ~1 MB): son solo la
+# FUENTE de los recortes que ya viven en assets/. El deck NO las usa en runtime.
+template/
+
+# Scripts de build (generan index_standalone.html; no hacen falta en el sitio).
+build_standalone.py
+
+# Temporales / sistema operativo
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# ── SÍ se publican en cada presentación: ──────────────────────────
+#   index.html · widgets.js · slides.md · data/presentation.json · assets/*
+#   index_standalone.html (opcional, versión offline)

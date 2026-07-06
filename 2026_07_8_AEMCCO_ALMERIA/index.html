@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>XIX Congreso AEMCCO · Almería 2026</title>
+<style>
+  /* ============================================================
+     MOTOR de la presentación (olas + navegación + estilos).
+     Normalmente NO tocas este archivo: el contenido vive en slides.md.
+     - Olas en <canvas> compartido, animación oscilante suave.
+     - "Viaje de profundidad": cada slide declara depth (0=superficie,
+       1=abismo). El motor interpola fondo, tinta y olas entre slides.
+     ============================================================ */
+
+  :root{
+    --bg-top: 244,250,253;
+    --bg-bot: 214,235,247;
+    --ink:    20,53,67;
+    --acc:    47,143,176;
+    --acc2:   142,69,133;
+    --hint:   0.55;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{
+    font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color: rgb(var(--ink));
+    background: linear-gradient(180deg, rgb(var(--bg-top)) 0%, rgb(var(--bg-bot)) 100%);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #waves{ position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; display:block; }
+  #vignette{
+    position: fixed; inset: 0; z-index: 1; pointer-events:none;
+    background: radial-gradient(120% 80% at 50% 42%, transparent 40%, rgba(0,0,0,.55) 100%);
+    opacity: 0; transition: opacity .2s linear;
+  }
+
+  /* Deck */
+  .deck{ position: fixed; inset: 0; z-index: 2; }
+  .slide{
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; justify-content: flex-start;
+    padding: clamp(84px,10vh,104px) clamp(40px,6vw,96px) clamp(44px,6vw,62px);
+    opacity: 0; transform: translateY(22px) scale(.995);
+    transition: none;
+    pointer-events: none;
+  }
+  .slide.active{ opacity: 1; transform: none; pointer-events: auto; }
+  /* la transición de entrada solo se activa tras el primer pintado (el slide inicial aparece nítido, sin fade a medias) */
+  .deck.ready .slide{ transition: opacity .7s ease, transform .7s ease; }
+  .wrap{ width:100%; max-width:1200px; margin:0 auto; text-align:left; }
+  .slide.center{ justify-content:center; padding-top: clamp(44px,6vw,62px); }
+  .slide.center .wrap{ text-align:center; }
+  /* en slides de contenido (título arriba-izquierda) el widget ocupa el área principal */
+  .wrap > .widget{ margin-left:0; margin-right:0; }
+
+  /* Tipografía */
+  .kicker{
+    font-size: clamp(.7rem, 1.4vw, .95rem);
+    letter-spacing:.32em; text-transform:uppercase;
+    color: rgb(var(--acc)); font-weight:600; margin-bottom: 1.1em;
+  }
+  h1{ font-size: clamp(1.9rem, 5.4vw, 4rem); line-height:1.05; font-weight:700; letter-spacing:-.01em; }
+  h2{ font-size: clamp(1.5rem, 4vw, 2.9rem); line-height:1.1; font-weight:700; margin-bottom:.2em; }
+  h3.kicker{ margin-bottom:.9em; }
+  .lead{ font-size: clamp(1rem, 2.1vw, 1.5rem); line-height:1.5; opacity:.92; }
+  .wrap > p.lead{ max-width: 56ch; margin: .7em 0 0; }
+  .slide.center .wrap > p.lead{ margin: .9em auto 0; }
+  .accent{ color: rgb(var(--acc)); }
+  .accent2{ color: rgb(var(--acc2)); }
+  .slide-img{
+    max-width:min(760px,90%); max-height:52vh; display:block;
+    margin:1.1em auto 0; border-radius:14px;
+    box-shadow:0 24px 60px rgba(10,40,70,.25); background:#fff;
+  }
+
+  /* --- Portada / contraportada wordmark --- */
+  .titlebar{
+    font-size: clamp(.9rem, 2.3vw, 1.6rem);
+    letter-spacing:.14em; text-transform:uppercase; font-weight:600;
+    color: rgb(var(--acc)); line-height:1.3;
+  }
+  .wordmark{
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(3rem, 11vw, 7.5rem);
+    letter-spacing:.06em; font-weight:400; margin:.18em 0 .1em;
+  }
+  .wordmark .m{ color: rgb(var(--acc2)); }
+  .wordmark .t{ color: rgb(var(--acc)); }
+  .wordmark .d{ color: rgb(var(--ink)); }
+  .meta{ font-size: clamp(.95rem,2vw,1.4rem); letter-spacing:.18em; color: rgb(var(--acc)); text-transform:uppercase; }
+  .meta .sep{ opacity:.5; margin:0 .5em; }
+  .univ{ margin-top:.5em; font-size: clamp(.75rem,1.4vw,1rem); letter-spacing:.22em; text-transform:uppercase; opacity:.7; }
+
+  /* Logos superiores (placeholders vectoriales, sin plantitas) */
+  .brandbar{ position: fixed; top: clamp(18px,3vw,38px); left:0; right:0; z-index:3;
+    display:flex; justify-content:space-between; align-items:center;
+    padding: 0 clamp(24px,5vw,64px); pointer-events:none;
+    opacity: var(--brand-op, 1); transition: none; }
+  .brandbar.ready{ transition: opacity .5s ease; }
+  .brand{ display:flex; align-items:center; gap:.55em; color: rgb(var(--ink)); }
+  .brand svg{ width: clamp(24px,3vw,40px); height:auto; }
+  .brand .txt{ font-size: clamp(.7rem,1.5vw,1rem); letter-spacing:.12em; }
+  .brand .txt small{ display:block; font-size:.72em; opacity:.7; letter-spacing:.16em; }
+
+  /* Tarjeta / columnas de contenido */
+  .card{
+    background: rgba(255,255,255,.55);
+    border: 1px solid rgba(255,255,255,.6);
+    border-radius: 18px; padding: clamp(20px,3vw,40px);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 20px 60px rgba(20,60,90,.12);
+  }
+  .slide[data-depth^="0.9"] .card, .slide[data-depth="1"] .card{
+    background: rgba(10,30,50,.35); border-color: rgba(120,200,255,.18);
+    box-shadow: 0 20px 60px rgba(0,0,0,.4);
+  }
+  .cols{ display:grid; grid-template-columns: repeat(3,1fr); gap: clamp(14px,2vw,26px); }
+  .cols .box{ text-align:left; }
+  .cols .n{ font-size: clamp(1.6rem,4vw,2.6rem); font-weight:700; color: rgb(var(--acc)); }
+  .cols .k{ font-size: clamp(.85rem,1.6vw,1.05rem); opacity:.85; margin-top:.2em; }
+
+  /* Slide del widget mlv-tools */
+  .stage{
+    width: min(1200px, 94vw); height: min(66vh, 700px);
+    border-radius: 16px; overflow:hidden; position:relative; margin-top:.4em;
+    border:1px solid rgba(120,200,255,.25);
+    box-shadow: 0 30px 80px rgba(0,0,0,.45); background: #0b1a28;
+  }
+  .stage iframe{ width:100%; height:100%; border:0; background:#0b1a28; }
+  .stage .ph{
+    position:absolute; inset:0; display:grid; place-items:center; text-align:center;
+    color:#cfe6f5; padding:2em; gap:.6em; transition:opacity .4s ease;
+    background:
+      radial-gradient(80% 60% at 50% 30%, rgba(60,150,200,.25), transparent 70%),
+      linear-gradient(180deg,#0d2236,#071522);
+  }
+  .stage .ph code{ background:rgba(255,255,255,.08); padding:.15em .5em; border-radius:6px; font-size:.85em; }
+  .stage .ph .big{ font-size: clamp(1.1rem,2.6vw,1.7rem); font-weight:700; color:#eaf6ff; }
+
+  /* HUD */
+  .hud{ position: fixed; z-index:4; bottom: clamp(14px,2.5vw,26px); pointer-events:none;
+        color: rgb(var(--ink)); font-size:.8rem; letter-spacing:.08em; }
+  .hud.num{ right: clamp(18px,3vw,34px); opacity:.6; font-variant-numeric: tabular-nums; }
+  .hud.help{ left: clamp(18px,3vw,34px); opacity: var(--hint); transition: opacity .6s ease; }
+  .hud .key{ display:inline-block; border:1px solid currentColor; border-radius:6px;
+    padding:.05em .45em; margin:0 .12em; opacity:.75; }
+  .progress{ position: fixed; top:0; left:0; height:3px; z-index:5;
+    width:0; background: rgb(var(--acc)); transition: width .5s ease; opacity:.85; }
+
+  @media (prefers-reduced-motion: reduce){ .slide{ transform:none; } .deck.ready .slide{ transition: opacity .2s ease; } }
+
+  /* --- contraportada (autores/afiliación/gracias/contacto) --- */
+/* ===========================================================
+   CONTRAPORTADA — espejo de la portada, versión completa.
+   ADITIVO: pegar dentro del <style> de index.html, justo tras el
+   bloque "--- Portada / contraportada wordmark ---" (línea ~96,
+   despues de .univ). No sustituye nada; solo añade clases nuevas.
+
+   Reutiliza tal cual: .titlebar  .wordmark(.t/.m/.d)  .meta(.sep)  .univ
+   Añade:              .authors  .authors .me  .affil  .contact
+                       .congress-info  y el modificador  .wordmark.thanks
+   =========================================================== */
+
+/* Autores — justo bajo el título y "un poco desplazado arriba":
+   margen superior corto para que la línea se pegue al .titlebar. */
+.authors{
+  margin-top: .4em;
+  font-size: clamp(.92rem, 1.9vw, 1.28rem);
+  line-height: 1.45;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: rgb(var(--ink));
+  opacity: .92;
+  max-width: 48ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+/* Ponente resaltado (el titular del email de contacto). */
+.authors .me{ color: rgb(var(--acc)); }
+
+/* Afiliación — tipografía de apoyo, mayúsculas espaciadas en morado de
+   marca, como las líneas secundarias de la plantilla del congreso. */
+.affil{
+  margin-top: .28em;
+  font-size: clamp(.74rem, 1.4vw, .98rem);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgb(var(--acc2));
+  opacity: .9;
+}
+.affil .sep{ opacity: .5; margin: 0 .5em; }   /* mismo separador que .meta .sep */
+
+/* "Gracias" en grande — modificador del wordmark serif (Georgia).
+   Un punto por debajo del wordmark de portada para dejar sitio a los
+   autores arriba y a la info del congreso abajo. */
+.wordmark.thanks{
+  font-size: clamp(2.8rem, 9vw, 6rem);
+  margin: .42em 0 .14em;
+}
+
+/* Email de contacto — acento teal, mismo aire que .meta pero en
+   minúsculas (nada de text-transform: es una dirección de correo). */
+.contact{
+  margin-top: .1em;
+  font-size: clamp(1rem, 2.2vw, 1.5rem);
+  letter-spacing: .06em;
+  font-weight: 600;
+  color: rgb(var(--acc));
+}
+
+/* Info del congreso — "más abajo" (margen amplio) y "algo más grande".
+   Se prefija .deck para ganar en especificidad al suelo de tamaño que
+   assets/a11y.css impone sobre .deck .univ (si no, a11y lo pisaría). */
+.congress-info{ margin-top: 1.15em; }
+.deck .congress-info .meta{ font-size: clamp(1.05rem, 2.3vw, 1.62rem); }
+.deck .congress-info .univ{
+  margin-top: .45em;
+  font-size: clamp(.9rem, 1.7vw, 1.18rem);
+}
+
+
+  /* --- Título/autores de la charla (portada): tipografía Aptos como la plantilla del congreso --- */
+  .talk-title{ font-family:"Aptos","Aptos Display","Segoe UI",system-ui,sans-serif; font-weight:700;
+    font-size:clamp(1.5rem,4.2vw,2.75rem); line-height:1.12; color:rgb(var(--ink)); margin-top:1.05em; letter-spacing:-.005em; }
+  .talk-sub{ font-family:"Aptos","Segoe UI",system-ui,sans-serif; font-weight:500;
+    font-size:clamp(.95rem,2.1vw,1.38rem); color:rgb(var(--acc)); margin-top:.32em; }
+  .talk-authors{ font-family:"Aptos","Segoe UI",system-ui,sans-serif; font-weight:600;
+    font-size:clamp(.85rem,1.8vw,1.14rem); color:rgb(var(--ink)); opacity:.92; margin-top:.95em; }
+  .talk-affil{ font-family:"Aptos","Segoe UI",system-ui,sans-serif;
+    font-size:clamp(.72rem,1.4vw,.96rem); letter-spacing:.05em; color:rgb(var(--acc2)); margin-top:.3em; }
+
+
+  .congress-title{ max-width:min(720px,80vw); height:auto; display:block; margin:0 auto .1em; }
+
+  /* bloque de código R (slide del ritual set.seed) */
+  .rcode{ font-family:"Cascadia Code","Fira Code",Menlo,Consolas,monospace; text-align:left; display:inline-block;
+    background:#0d2233; color:#cfe3f0; border:1px solid rgba(120,180,220,.25); border-radius:12px;
+    padding:.9em 1.3em; font-size:clamp(.9rem,2vw,1.35rem); line-height:1.55; margin:.6em auto .2em;
+    box-shadow:0 18px 50px rgba(0,0,0,.28); }
+  .rcode .fn{ color:#7fd0ff; } .rcode .num{ color:#e0a02f; } .rcode .op{ color:#c99; } .rcode .cm{ color:#5f88a0; font-style:italic; }
+  /* listas de bullets (slide metodología) */
+  .bullets{ list-style:none; text-align:left; max-width:44ch; margin:.6em 0 0; }
+  .bullets li{ position:relative; padding-left:1.3em; margin:.55em 0; font-size:clamp(1rem,2.1vw,1.45rem); line-height:1.4; }
+  .bullets li::before{ content:"▸"; position:absolute; left:0; color:rgb(var(--acc)); font-weight:700; }
+
+  /* cita en pie de slide — fila de referencia estilo mlv-tools:
+     barra de acento a la izquierda (como .pub-list li) + badge de tipo (.pub-type-badge).
+     Se recolorea con la profundidad vía --acc/--ink. */
+  .cite-chip{ margin-top:auto; align-self:flex-start; display:inline-flex; align-items:center; gap:.6em;
+    max-width:min(780px,88%); padding:.2em 0 .2em .66em; line-height:1.35;
+    font-size:clamp(.68rem,1.2vw,.86rem); color:rgba(var(--ink),.7);
+    border-left:2px solid rgba(var(--acc),.5); }
+  .cite-chip .cite-badge{ flex:0 0 auto; padding:.06em .42em;
+    font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace; font-size:.74em; font-weight:600;
+    text-transform:uppercase; letter-spacing:.09em; color:rgb(var(--acc));
+    border:1px solid rgba(var(--acc),.42); border-radius:3px; background:rgba(var(--acc),.08); }
+  .cite-chip i{ font-style:italic; color:rgba(var(--ink),.62); }
+
+  /* QR de mlv-tools en la contraportada (junto al mail) */
+  .qr-block{ margin-top:.7em; display:flex; flex-direction:column; align-items:center; gap:.35em; }
+  .qr-block img{ width:clamp(92px,11vw,128px); height:auto; }
+  .qr-block .qr-label{ font-size:clamp(.66rem,1.3vw,.88rem); letter-spacing:.04em; color:rgb(var(--acc)); font-weight:600; }
+</style>
+<link rel="stylesheet" href="assets/a11y.css"><!-- accesibilidad: contraste + tipografía legible (aditivo, carga tras los estilos) -->
+</head>
+<body>
+  <canvas id="waves"></canvas>
+  <div id="vignette"></div>
+  <div class="progress" id="progress"></div>
+
+  <div class="brandbar" id="brandbar">
+    <div class="brand"><img src="assets/logo-aemcco.png" alt="AEMCCO" style="height:clamp(26px,3.4vw,44px);width:auto"></div>
+    <div class="brand"><img src="assets/logo-ual.png" alt="Universidad de Almería" style="height:clamp(30px,3.8vw,50px);width:auto"></div>
+  </div>
+
+  <!-- El deck se construye desde slides.md -->
+  <div class="deck" id="deck"></div>
+
+  <!-- Opcional: pega aquí el contenido de slides.md si quieres que funcione con
+       doble-clic (file://) sin servidor. Si está vacío, se carga slides.md por HTTP. -->
+  <script type="text/markdown" id="slides-src"></script>
+
+  <div class="hud num" id="hudNum">01 / 01</div>
+  <div class="hud help" id="hudHelp">
+    <span class="key">←</span><span class="key">→</span> navegar
+    &nbsp;·&nbsp; <span class="key">F</span> pantalla completa
+  </div>
+
+<script src="widgets.js"></script>
+<script>
+/* ============================================================
+   1) Parser mínimo de slides.md  → construye el deck
+   2) Motor de olas + navegación
+   ============================================================ */
+(async () => {
+  "use strict";
+
+  /* ---------- carga del contenido ---------- */
+  async function loadSlides(){
+    const inline = document.getElementById('slides-src');
+    if (inline && inline.textContent.trim()) return inline.textContent;  // modo offline
+    try{
+      const r = await fetch('slides.md', {cache:'no-cache'});
+      if (r.ok) return await r.text();
+      throw 0;
+    }catch(_){
+      document.getElementById('deck').innerHTML =
+        '<section class="slide active"><div class="wrap"><h2>Sirve la carpeta por HTTP</h2>'+
+        '<p class="lead">El navegador no deja leer <code>slides.md</code> con doble-clic '+
+        '(<code>file://</code>). Ábrelo con el servidor local — '+
+        '<code>localhost:8000/presentations/…</code> — o en GitHub Pages. '+
+        '(Alternativa: pega el markdown en el <code>&lt;script id="slides-src"&gt;</code>).</p></div></section>';
+      return null;
+    }
+  }
+
+  /* ---------- markdown mínimo (con paso de HTML crudo) ---------- */
+  const inline = s => s
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img class="slide-img" alt="$1" src="$2">')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
+
+  function renderText(block){
+    let out='', para=[];
+    const flush = () => { if(para.length){ out += `<p class="lead">${inline(para.join(' '))}</p>`; para=[]; } };
+    for (const raw of block.split('\n')){
+      const s = raw.trim();
+      if (/^# /.test(s))        { flush(); out += `<h1>${inline(s.slice(2))}</h1>`; }
+      else if (/^## /.test(s))  { flush(); out += `<h2>${inline(s.slice(3))}</h2>`; }
+      else if (/^### /.test(s)) { flush(); out += `<h3 class="kicker">${inline(s.slice(4))}</h3>`; }
+      else if (/^> /.test(s))   { flush(); out += `<div class="kicker">${inline(s.slice(2))}</div>`; }
+      else if (/^!\[[^\]]*\]\([^)]+\)$/.test(s)) { flush(); out += inline(s); } // imagen sola
+      else if (s) para.push(s);
+      else flush();
+    }
+    flush();
+    return out;
+  }
+
+  function renderBody(body){
+    let out='';
+    for (let block of body.replace(/\r/g,'').split(/\n[ \t]*\n/)){
+      block = block.replace(/^\n+|\n+$/g,'');
+      if (!block.trim()) continue;
+      if (block.trimStart().startsWith('<')) out += block;   // HTML crudo tal cual
+      else out += renderText(block);
+    }
+    return out;
+  }
+
+  function buildDeck(md){
+    md = md.replace(/\x3c!--[\s\S]*?--\x3e/g, '');           // fuera comentarios (escapes: evita <!-- --> literal en <script>)
+    const parts = md.split(/^---[ \t]*(.*)$/m);               // [preámbulo, opts, body, opts, body, ...]
+    let html='';
+    for (let i=1; i<parts.length; i+=2){
+      const opts = (parts[i]||'').trim();
+      const body = parts[i+1] || '';
+      let depth='0', nobrand='', wide='', vd='', center='';
+      for (const tk of opts.split(/\s+/).filter(Boolean)){
+        if (tk.includes(':')){ const [k,v]=tk.split(':'); if(k==='depth') depth=v; }
+        else if (tk==='nobrand') nobrand=' data-nobrand';
+        else if (tk==='wide')    wide=' style="max-width:min(1240px,95vw)"';
+        else if (tk==='void')    vd=' data-void';
+        else if (tk==='center')  center=' center';
+      }
+      html += `<section class="slide${center}" data-depth="${depth}"${nobrand}${vd}><div class="wrap"${wide}>${renderBody(body)}</div></section>`;
+    }
+    document.getElementById('deck').innerHTML = html || '';
+  }
+
+  /* ---------- arranque ---------- */
+  const md = await loadSlides();
+  if (md === null) return;
+  buildDeck(md);
+  if (window.MLVWidgets) { await MLVWidgets.load(); MLVWidgets.mountAll(document.getElementById('deck')); }
+
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const slides = [...document.querySelectorAll('.slide')];
+  const N = slides.length || 1;
+  const hudNum = document.getElementById('hudNum');
+  const progress = document.getElementById('progress');
+  const brandbar = document.getElementById('brandbar');
+  const vignette = document.getElementById('vignette');
+
+  let idx = 0, depth = 0, depthTarget = 0;
+  let voidAmt = 0, voidTarget = 0;           // slide "void": funde las olas a negro total
+  const pad = n => String(n).padStart(2,'0');
+
+  function show(n){
+    n = Math.max(0, Math.min(N-1, n));
+    idx = n;
+    slides.forEach((s,i)=> s.classList.toggle('active', i===n));
+    hudNum.textContent = `${pad(n+1)} / ${pad(N)}`;
+    progress.style.width = (N>1 ? n/(N-1)*100 : 100) + '%';
+    depthTarget = parseFloat(slides[n]?.dataset.depth || '0');
+    voidTarget = slides[n]?.hasAttribute('data-void') ? 1 : 0;
+    brandbar.style.setProperty('--brand-op', slides[n]?.hasAttribute('data-nobrand') ? '0' : '1');
+    if (slides[n]?.querySelector('#mlvFrame')) loadWidget();
+    if (window.MLVWidgets) { slides.forEach(s => MLVWidgets.deactivate(s)); MLVWidgets.activate(slides[n]); }
+    try { if (location.hash !== '#'+(n+1)) history.replaceState(null,'','#'+(n+1)); }
+    catch(_) { try { location.hash = '#'+(n+1); } catch(__){} }
+  }
+  const next = () => show(idx+1);
+  const prev = () => show(idx-1);
+
+  addEventListener('keydown', e => {
+    switch(e.key){
+      case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ':
+        e.preventDefault(); next(); break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp':
+        e.preventDefault(); prev(); break;
+      case 'Home': show(0); break;
+      case 'End': show(N-1); break;
+      case 'f': case 'F':
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+        else document.exitFullscreen?.();
+        break;
+    }
+  });
+  addEventListener('click', e => {
+    if (e.target.closest('.stage') || e.target.closest('a')) return;
+    (e.clientX > innerWidth/2) ? next() : prev();
+  });
+
+  let hintTimer;
+  function pokeHint(){
+    document.documentElement.style.setProperty('--hint','0.55');
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(()=>document.documentElement.style.setProperty('--hint','0'), 4000);
+  }
+  addEventListener('keydown', pokeHint); addEventListener('mousemove', pokeHint); pokeHint();
+
+  function loadWidget(){
+    const f = document.getElementById('mlvFrame');
+    if (!f || f.src) return;
+    f.src = f.dataset.src;
+    f.addEventListener('load', () => {
+      const ph = document.getElementById('mlvPlaceholder');
+      if (ph) ph.style.opacity = '0';
+    });
+  }
+
+  const start = parseInt((location.hash||'').slice(1),10);
+  show(Number.isFinite(start) && start>=1 && start<=N ? start-1 : 0);
+  // Activa las transiciones SOLO tras el primer pintado (doble rAF): así el slide
+  // inicial se pinta ya nítido a opacidad 1 (transition:none) y no arranca un fade a medias.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.getElementById('deck').classList.add('ready');
+    document.getElementById('brandbar').classList.add('ready');
+  }));
+
+  /* ---------- Motor de olas (canvas) ---------- */
+  const canvas = document.getElementById('waves');
+  const ctx = canvas.getContext('2d');
+  let W=0,H=0,DPR=1;
+  function resize(){
+    DPR = Math.min(devicePixelRatio||1, 2);
+    W = innerWidth; H = innerHeight;
+    canvas.width = W*DPR; canvas.height = H*DPR;
+    canvas.style.width = W+'px'; canvas.style.height = H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    seedBubbles();
+  }
+  addEventListener('resize', resize);
+
+  const SURF = { bgTop:[244,250,253], bgBot:[214,235,247], ink:[20,53,67],   acc:[47,143,176],  acc2:[142,69,133], wave:[103,170,208], hi:[212,236,248] };
+  const MID  = { bgTop:[20,78,110],   bgBot:[7,38,60],     ink:[214,236,245], acc:[90,195,230],  acc2:[180,135,205], wave:[80,170,210],  hi:[160,228,255] };
+  const DEEP = { bgTop:[10,40,62],    bgBot:[1,6,12],      ink:[214,236,245], acc:[69,200,240],  acc2:[185,138,208], wave:[46,120,150],  hi:[110,220,255] };
+  const lerp = (a,b,t)=>a+(b-a)*t;
+  const mix  = (c1,c2,t)=>[lerp(c1[0],c2[0],t),lerp(c1[1],c2[1],t),lerp(c1[2],c2[2],t)];
+  const pal3 = (a,b,c,t)=> t<0.5 ? mix(a,b,t*2) : mix(b,c,(t-0.5)*2);
+  const css  = c => `${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])}`;
+
+  depth = parseFloat(slides[idx]?.dataset.depth || '0');
+
+  const RIBBONS = [
+    {baseY:0.72, amp:26, spread:130, lines:34, w1:1.4, w2:2.6, s1:0.14, s2:0.09, ph:0.0, ph2:1.7},
+    {baseY:0.81, amp:34, spread:96,  lines:26, w1:1.1, w2:2.0, s1:0.10, s2:0.07, ph:2.0, ph2:0.5, purple:1},
+    {baseY:0.63, amp:20, spread:74,  lines:20, w1:1.7, w2:3.1, s1:0.17, s2:0.11, ph:4.0, ph2:2.9},
+  ];
+
+  let bubbles = [], motes = [];
+  let seed = 12345;
+  const rnd = () => (seed = (seed*1664525 + 1013904223) >>> 0) / 4294967296;
+  function seedBubbles(){
+    bubbles = Array.from({length:52}, () => ({
+      x: rnd()*W, y: rnd()*H, r: rnd()*2.2+0.5, s: rnd()*20+8, drift: rnd()*2-1, ph: rnd()*6.28
+    }));
+    // "marine snow": motas muy tenues a la deriva → sensación de estar buceando
+    motes = Array.from({length:44}, () => ({
+      x: rnd()*W, y: rnd()*H, r: rnd()*1.6+0.4, s: rnd()*5+2, dx: rnd()*2-1, ph: rnd()*6.28
+    }));
+  }
+
+  function draw(tms){
+    const t = tms/1000;
+    depth += (depthTarget - depth) * (REDUCED ? 1 : 0.05);
+    voidAmt += (voidTarget - voidAmt) * (REDUCED ? 1 : 0.09);
+    const d = depth;
+
+    let bgTop = pal3(SURF.bgTop, MID.bgTop, DEEP.bgTop, d);
+    let bgBot = pal3(SURF.bgBot, MID.bgBot, DEEP.bgBot, d);
+    if (voidAmt > 0.001){ bgTop = mix(bgTop,[0,0,0],voidAmt); bgBot = mix(bgBot,[0,0,0],voidAmt); }
+    document.body.style.background = `linear-gradient(180deg, rgb(${css(bgTop)}) 0%, rgb(${css(bgBot)}) 100%)`;
+    const root = document.documentElement.style;
+    const inkT = Math.min(1, Math.max(0, (d - 0.25) / 0.10));   // tinta oscura hasta .25, clara desde .35 (ningún slide cae en el gris intermedio)
+    root.setProperty('--ink',  css(mix(SURF.ink, DEEP.ink, inkT)));
+    root.setProperty('--acc',  css(pal3(SURF.acc,  MID.acc,  DEEP.acc,  d)));
+    root.setProperty('--acc2', css(pal3(SURF.acc2, MID.acc2, DEEP.acc2, d)));
+    // panel de widgets: claro en slides claras, oscuro en oscuras
+    const panelT = Math.min(1, Math.max(0, (d - 0.22) / 0.16));
+    root.setProperty('--panel-bg', `rgba(${css(mix([234,243,250],[10,24,38], panelT))},.66)`);
+    root.setProperty('--panel-bd', `rgba(${css(mix([120,160,190],[150,190,220], panelT))},.30)`);
+    vignette.style.opacity = Math.max(0,(d-0.35))/0.65 * 0.9;
+
+    ctx.clearRect(0,0,W,H);
+    const waveRGB = pal3(SURF.wave, MID.wave, DEEP.wave, d);
+    const hiRGB   = pal3(SURF.hi,   MID.hi,   DEEP.hi,   d);
+    // Las olas SOLO existen cerca de la superficie (d < ~0.25). Bajo el agua no hay olas:
+    // el ascenso es agua que se aclara poco a poco; al final "sacas la cabeza" y aparecen de golpe.
+    let surf = Math.max(0, Math.min(1, (0.35 - d) / 0.28));  // olas visibles un poco más profundo (para el buceo)
+    surf = surf * surf * (3 - 2 * surf);                    // smoothstep → aparición/desaparición suave
+    const globalA = 0.9 * surf * (1 - voidAmt);
+    const glow    = 0;                                       // sin neón; olas de superficie, azul suave
+    const waveCenter = d < 0.13 ? lerp(0.72, 0.90, d / 0.13) : lerp(0.90, -0.25, Math.min(1, (d - 0.13) / 0.22));  // al bucear las olas SUBEN y desaparecen; al emerger BAJAN a su sitio
+    for (const r of RIBBONS){
+      const effBaseY = (waveCenter + (r.baseY - 0.72)) * H;
+      const amp    = r.amp;
+      const spread = r.spread;
+      const step   = 14;
+      for (let li=0; li<r.lines; li++){
+        const f = r.lines>1 ? li/(r.lines-1) : 0.5;
+        const edge = Math.abs(f-0.5)*2, coreT = 1-edge;
+        const lineA = (0.08 + 0.92*coreT) * globalA;
+        if (lineA < 0.02) continue;
+        const col = mix(r.purple ? [132,116,182] : waveRGB, hiRGB, coreT*0.7);
+        ctx.strokeStyle = `rgba(${css(col)},${lineA.toFixed(3)})`;
+        ctx.lineWidth = 1;
+        if (glow>0){ ctx.shadowColor = `rgba(${css(hiRGB)},.8)`; ctx.shadowBlur = glow*coreT; }
+        else ctx.shadowBlur = 0;
+        ctx.beginPath();
+        for (let px=-20; px<=W+20; px+=step){
+          const u = px/W;
+          const thick = spread * (0.35 + 0.65*Math.abs(Math.sin(u*Math.PI*0.8 + r.ph)));
+          const y = effBaseY
+                  + Math.sin(u*Math.PI*r.w1 + t*r.s1*6 + r.ph)  * amp
+                  + Math.sin(u*Math.PI*r.w2 - t*r.s2*6 + r.ph2) * amp*0.55
+                  + (f-0.5)*thick;
+          (px<=-20) ? ctx.moveTo(px,y) : ctx.lineTo(px,y);
+        }
+        ctx.stroke();
+      }
+    }
+    ctx.shadowBlur = 0;
+
+    if (d>0.35 && voidAmt<0.99){
+      const ba = Math.min(1,(d-0.35)/0.5) * (1-voidAmt);
+      // marine snow: motas tenues a la deriva (continuidad de "estar buceando", sin distraer)
+      ctx.fillStyle = `rgba(${css(hiRGB)},${(0.07*ba).toFixed(3)})`;
+      for (const m of motes){
+        m.y += m.s * 0.012;
+        m.x += Math.sin(t*0.4 + m.ph) * 0.22 * m.dx;
+        if (m.y > H+8){ m.y = -8; m.x = rnd()*W; }
+        ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, 6.2832); ctx.fill();
+      }
+      // burbujas que ascienden despacio
+      ctx.fillStyle = `rgba(${css(hiRGB)},${(0.16*ba).toFixed(3)})`;
+      for (const b of bubbles){
+        b.y -= b.s * 0.016;
+        b.x += Math.sin(t*0.6 + b.ph) * 0.3 * b.drift;
+        if (b.y < -10){ b.y = H+10; b.x = rnd()*W; }
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 6.2832); ctx.fill();
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+
+  resize();
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>
