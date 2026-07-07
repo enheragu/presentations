@@ -80,13 +80,13 @@ html body{
    the low end of the clamp() ramps. These only RAISE the floor of the clamp;
    the fluid upper bound is untouched. */
 .deck .kicker{
-  font-size: clamp(.82rem, 1.5vw, .98rem);   /* was .7rem floor — too small   */
+  font-size: .98rem;   /* px de diseño (el deck escala vía #scaler)          */
 }
 .deck .univ{
-  font-size: clamp(.82rem, 1.5vw, 1.02rem);  /* was .75rem floor              */
+  font-size: 1.02rem;  /* px de diseño                                        */
 }
 .deck .cols .k{
-  font-size: clamp(.92rem, 1.7vw, 1.08rem);  /* was .85rem floor              */
+  font-size: 1.08rem;  /* px de diseño                                        */
 }
 
 /* ----------------------------------------------------------------------------

@@ -3,7 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>XIX Congreso AEMCCO · Almería 2026</title>
+<title>Que no te engañe el azar · XIX Congreso AEMCCO 2026</title>
+<meta name="description" content="Cómo impacta la aleatoriedad en el diseño de redes neuronales — un problema de medición y fiabilidad. Charla del XIX Congreso AEMCCO (Almería, 2026).">
+<!-- Open Graph / Twitter: miniatura al compartir el enlace (portada del deck) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Que no te engañe el azar">
+<meta property="og:description" content="Cómo impacta la aleatoriedad en el diseño de redes neuronales — XIX Congreso AEMCCO, Almería 2026.">
+<meta property="og:url" content="https://enheragu.github.io/presentations/2026_07_8_AEMCCO_ALMERIA/">
+<meta property="og:image" content="https://enheragu.github.io/presentations/2026_07_8_AEMCCO_ALMERIA/assets/og-cover.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="720">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Que no te engañe el azar">
+<meta name="twitter:description" content="Cómo impacta la aleatoriedad en el diseño de redes neuronales — XIX Congreso AEMCCO, Almería 2026.">
+<meta name="twitter:image" content="https://enheragu.github.io/presentations/2026_07_8_AEMCCO_ALMERIA/assets/og-cover.png">
+<!-- Google tag (gtag.js) — traza también las visitas directas por QR (que no pasan por el índice) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8ELXXMQBVQ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-8ELXXMQBVQ');
+</script>
 <style>
   /* ============================================================
      MOTOR de la presentación (olas + navegación + estilos).
@@ -38,79 +59,102 @@
     opacity: 0; transition: opacity .2s linear;
   }
 
+  /* Escenario a tamaño de DISEÑO (1280×720) escalado a la pantalla (scale-to-fit).
+     Las olas (#waves) siguen a pantalla completa DETRÁS; solo el contenido se escala,
+     así el deck se ve IDÉNTICO y llena en 1080p, 1440p, 4:3… (siempre horizontal).
+     Al ser un tamaño fijo, aquí todo va en px de diseño (nada de vw/vh). */
+  #scaler{
+    position: fixed; left:50%; top:50%;
+    width:1280px; height:720px;
+    transform: translate(-50%,-50%) scale(var(--scale,1));
+    transform-origin: center center;
+    z-index: 2;
+  }
   /* Deck */
-  .deck{ position: fixed; inset: 0; z-index: 2; }
+  .deck{ position: absolute; inset: 0; z-index: 2; }
   .slide{
     position: absolute; inset: 0;
     display: flex; flex-direction: column; justify-content: flex-start;
-    padding: clamp(84px,10vh,104px) clamp(40px,6vw,96px) clamp(44px,6vw,62px);
-    opacity: 0; transform: translateY(22px) scale(.995);
+    padding: 50px 77px 48px;
+    opacity: 0; transform: none;
     transition: none;
     pointer-events: none;
   }
-  .slide.active{ opacity: 1; transform: none; pointer-events: auto; }
-  /* la transición de entrada solo se activa tras el primer pintado (el slide inicial aparece nítido, sin fade a medias) */
-  .deck.ready .slide{ transition: opacity .7s ease, transform .7s ease; }
+  .slide.active{ opacity: 1; pointer-events: auto; }
+  /* SOLO cruza opacidad (sin translate/scale): así un elemento compartido entre dos slides
+     consecutivas (histograma 9↔10, recta 12↔13) se queda EXACTAMENTE en su sitio durante el
+     fundido y no hay "saltito". La transición se activa tras el primer pintado (deck.ready). */
+  .deck.ready .slide{ transition: opacity .55s ease; }
   .wrap{ width:100%; max-width:1200px; margin:0 auto; text-align:left; }
-  .slide.center{ justify-content:center; padding-top: clamp(44px,6vw,62px); }
+  .slide.center{ justify-content:center; padding-top: 62px; }
   .slide.center .wrap{ text-align:center; }
-  /* en slides de contenido (título arriba-izquierda) el widget ocupa el área principal */
-  .wrap > .widget{ margin-left:0; margin-right:0; }
+  /* centra en vertical pero el texto sigue alineado a la izquierda (slides de solo texto) */
+  .slide.midv{ justify-content:center; }
+  /* en slides 'center' con kicker (p.ej. el pivote 7): el pretítulo se queda FIJO arriba
+     en su posición constante, y solo el título se centra en vertical */
+  .slide.center .kicker{ position:absolute; top:50px; left:77px; margin:0; }
+  /* 'bodyc': kicker + título arriba; el cuerpo va justo debajo con un margen extra
+     (centrarlo en vertical lo dejaba demasiado bajo y quedaba raro) */
+  .slide.bodyc .wrap > h1 + *, .slide.bodyc .wrap > h2 + *{ margin-top:1.7em; }
+  /* en slides de contenido (título arriba-izquierda) el widget ocupa el área principal,
+     pero la CAJA en sí va centrada (kicker/título quedan a la izquierda). Su ancho es
+     fijo (width:1100px en widgets.js) → todas las cajas salen iguales y centradas. */
+  .wrap > .widget{ margin-left:auto; margin-right:auto; }
 
   /* Tipografía */
   .kicker{
-    font-size: clamp(.7rem, 1.4vw, .95rem);
+    font-size: .95rem;
     letter-spacing:.32em; text-transform:uppercase;
-    color: rgb(var(--acc)); font-weight:600; margin-bottom: 1.1em;
+    color: rgb(var(--acc)); font-weight:600; margin-bottom: .7em;
   }
-  h1{ font-size: clamp(1.9rem, 5.4vw, 4rem); line-height:1.05; font-weight:700; letter-spacing:-.01em; }
-  h2{ font-size: clamp(1.5rem, 4vw, 2.9rem); line-height:1.1; font-weight:700; margin-bottom:.2em; }
+  h1{ font-size: 4rem; line-height:1.05; font-weight:700; letter-spacing:-.01em; }
+  h2{ font-size: 2.9rem; line-height:1.1; font-weight:700; margin-bottom:.2em; }
   h3.kicker{ margin-bottom:.9em; }
-  .lead{ font-size: clamp(1rem, 2.1vw, 1.5rem); line-height:1.5; opacity:.92; }
+  .lead{ font-size: 1.5rem; line-height:1.5; opacity:.92; }
   .wrap > p.lead{ max-width: 56ch; margin: .7em 0 0; }
   .slide.center .wrap > p.lead{ margin: .9em auto 0; }
   .accent{ color: rgb(var(--acc)); }
   .accent2{ color: rgb(var(--acc2)); }
   .slide-img{
-    max-width:min(760px,90%); max-height:52vh; display:block;
-    margin:1.1em auto 0; border-radius:14px;
+    max-width:min(940px,94%); max-height:452px; display:block;
+    margin:.9em auto 0; border-radius:14px;
     box-shadow:0 24px 60px rgba(10,40,70,.25); background:#fff;
   }
 
   /* --- Portada / contraportada wordmark --- */
   .titlebar{
-    font-size: clamp(.9rem, 2.3vw, 1.6rem);
+    font-size: 1.6rem;
     letter-spacing:.14em; text-transform:uppercase; font-weight:600;
     color: rgb(var(--acc)); line-height:1.3;
   }
   .wordmark{
     font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(3rem, 11vw, 7.5rem);
+    font-size: 7.5rem;
     letter-spacing:.06em; font-weight:400; margin:.18em 0 .1em;
   }
   .wordmark .m{ color: rgb(var(--acc2)); }
   .wordmark .t{ color: rgb(var(--acc)); }
   .wordmark .d{ color: rgb(var(--ink)); }
-  .meta{ font-size: clamp(.95rem,2vw,1.4rem); letter-spacing:.18em; color: rgb(var(--acc)); text-transform:uppercase; }
+  .meta{ font-size: 1.4rem; letter-spacing:.18em; color: rgb(var(--acc)); text-transform:uppercase; }
   .meta .sep{ opacity:.5; margin:0 .5em; }
-  .univ{ margin-top:.5em; font-size: clamp(.75rem,1.4vw,1rem); letter-spacing:.22em; text-transform:uppercase; opacity:.7; }
+  .univ{ margin-top:.5em; font-size: 1rem; letter-spacing:.22em; text-transform:uppercase; opacity:.7; }
 
   /* Logos superiores (placeholders vectoriales, sin plantitas) */
-  .brandbar{ position: fixed; top: clamp(18px,3vw,38px); left:0; right:0; z-index:3;
+  .brandbar{ position: absolute; top: 38px; left:0; right:0; z-index:3;
     display:flex; justify-content:space-between; align-items:center;
-    padding: 0 clamp(24px,5vw,64px); pointer-events:none;
+    padding: 0 64px; pointer-events:none;
     opacity: var(--brand-op, 1); transition: none; }
   .brandbar.ready{ transition: opacity .5s ease; }
   .brand{ display:flex; align-items:center; gap:.55em; color: rgb(var(--ink)); }
-  .brand svg{ width: clamp(24px,3vw,40px); height:auto; }
-  .brand .txt{ font-size: clamp(.7rem,1.5vw,1rem); letter-spacing:.12em; }
+  .brand svg{ width: 38px; height:auto; }
+  .brand .txt{ font-size: 1rem; letter-spacing:.12em; }
   .brand .txt small{ display:block; font-size:.72em; opacity:.7; letter-spacing:.16em; }
 
   /* Tarjeta / columnas de contenido */
   .card{
     background: rgba(255,255,255,.55);
     border: 1px solid rgba(255,255,255,.6);
-    border-radius: 18px; padding: clamp(20px,3vw,40px);
+    border-radius: 18px; padding: 38px;
     backdrop-filter: blur(6px);
     box-shadow: 0 20px 60px rgba(20,60,90,.12);
   }
@@ -118,14 +162,18 @@
     background: rgba(10,30,50,.35); border-color: rgba(120,200,255,.18);
     box-shadow: 0 20px 60px rgba(0,0,0,.4);
   }
-  .cols{ display:grid; grid-template-columns: repeat(3,1fr); gap: clamp(14px,2vw,26px); }
+  .cols{ display:grid; grid-template-columns: repeat(3,1fr); gap: 26px; }
   .cols .box{ text-align:left; }
-  .cols .n{ font-size: clamp(1.6rem,4vw,2.6rem); font-weight:700; color: rgb(var(--acc)); }
-  .cols .k{ font-size: clamp(.85rem,1.6vw,1.05rem); opacity:.85; margin-top:.2em; }
+  .cols .n{ font-size: 2.6rem; font-weight:700; color: rgb(var(--acc)); }
+  .cols .k{ font-size: 1.05rem; opacity:.85; margin-top:.2em; }
+  /* Celda de la rejilla de ablación (slide Caso 2 · planteamiento) */
+  .ablcell{ width:92px; height:70px; border:1.6px solid rgba(230,159,0,.5); border-radius:11px;
+    display:flex; align-items:center; justify-content:center;
+    font:700 1.3rem system-ui; color:rgb(var(--ink)); background:rgba(230,159,0,.09); }
 
   /* Slide del widget mlv-tools */
   .stage{
-    width: min(1200px, 94vw); height: min(66vh, 700px);
+    width: 1200px; height: 475px;
     border-radius: 16px; overflow:hidden; position:relative; margin-top:.4em;
     border:1px solid rgba(120,200,255,.25);
     box-shadow: 0 30px 80px rgba(0,0,0,.45); background: #0b1a28;
@@ -139,16 +187,16 @@
       linear-gradient(180deg,#0d2236,#071522);
   }
   .stage .ph code{ background:rgba(255,255,255,.08); padding:.15em .5em; border-radius:6px; font-size:.85em; }
-  .stage .ph .big{ font-size: clamp(1.1rem,2.6vw,1.7rem); font-weight:700; color:#eaf6ff; }
+  .stage .ph .big{ font-size: 1.7rem; font-weight:700; color:#eaf6ff; }
 
   /* HUD */
-  .hud{ position: fixed; z-index:4; bottom: clamp(14px,2.5vw,26px); pointer-events:none;
+  .hud{ position: absolute; z-index:4; bottom: 26px; pointer-events:none;
         color: rgb(var(--ink)); font-size:.8rem; letter-spacing:.08em; }
-  .hud.num{ right: clamp(18px,3vw,34px); opacity:.6; font-variant-numeric: tabular-nums; }
-  .hud.help{ left: clamp(18px,3vw,34px); opacity: var(--hint); transition: opacity .6s ease; }
+  .hud.num{ right: 34px; opacity:.6; font-variant-numeric: tabular-nums; }
+  .hud.help{ left: 34px; opacity: var(--hint); transition: opacity .6s ease; }
   .hud .key{ display:inline-block; border:1px solid currentColor; border-radius:6px;
     padding:.05em .45em; margin:0 .12em; opacity:.75; }
-  .progress{ position: fixed; top:0; left:0; height:3px; z-index:5;
+  .progress{ position: absolute; top:0; left:0; height:3px; z-index:5;
     width:0; background: rgb(var(--acc)); transition: width .5s ease; opacity:.85; }
 
   @media (prefers-reduced-motion: reduce){ .slide{ transform:none; } .deck.ready .slide{ transition: opacity .2s ease; } }
@@ -168,9 +216,9 @@
 /* Autores — justo bajo el título y "un poco desplazado arriba":
    margen superior corto para que la línea se pegue al .titlebar. */
 .authors{
-  margin-top: .4em;
-  font-size: clamp(.92rem, 1.9vw, 1.28rem);
-  line-height: 1.45;
+  margin-top: .3em;
+  font-size: 1.28rem;
+  line-height: 1.32;
   font-weight: 600;
   letter-spacing: .01em;
   color: rgb(var(--ink));
@@ -180,13 +228,13 @@
   margin-right: auto;
 }
 /* Ponente resaltado (el titular del email de contacto). */
-.authors .me{ color: rgb(var(--acc)); }
+.authors .me{ font-weight: 800; }   /* el ponente: mismo color (negro), en negrita — sin color aparte */
 
 /* Afiliación — tipografía de apoyo, mayúsculas espaciadas en morado de
    marca, como las líneas secundarias de la plantilla del congreso. */
 .affil{
   margin-top: .28em;
-  font-size: clamp(.74rem, 1.4vw, .98rem);
+  font-size: .98rem;
   letter-spacing: .12em;
   text-transform: uppercase;
   font-weight: 600;
@@ -199,15 +247,16 @@
    Un punto por debajo del wordmark de portada para dejar sitio a los
    autores arriba y a la info del congreso abajo. */
 .wordmark.thanks{
-  font-size: clamp(2.8rem, 9vw, 6rem);
-  margin: .42em 0 .14em;
+  font-size: 4.9rem;
+  margin: .22em 0 .06em;
+  line-height: 1.08;
 }
 
 /* Email de contacto — acento teal, mismo aire que .meta pero en
    minúsculas (nada de text-transform: es una dirección de correo). */
 .contact{
   margin-top: .1em;
-  font-size: clamp(1rem, 2.2vw, 1.5rem);
+  font-size: 1.5rem;
   letter-spacing: .06em;
   font-weight: 600;
   color: rgb(var(--acc));
@@ -216,80 +265,130 @@
 /* Info del congreso — "más abajo" (margen amplio) y "algo más grande".
    Se prefija .deck para ganar en especificidad al suelo de tamaño que
    assets/a11y.css impone sobre .deck .univ (si no, a11y lo pisaría). */
-.congress-info{ margin-top: 1.15em; }
-.deck .congress-info .meta{ font-size: clamp(1.05rem, 2.3vw, 1.62rem); }
+.congress-info{ margin-top: .72em; }
+.deck .congress-info .meta{ font-size: 1.62rem; }
 .deck .congress-info .univ{
   margin-top: .45em;
-  font-size: clamp(.9rem, 1.7vw, 1.18rem);
+  font-size: 1.18rem;
 }
 
 
   /* --- Título/autores de la charla (portada): tipografía Aptos como la plantilla del congreso --- */
   .talk-title{ font-family:"Aptos","Aptos Display","Segoe UI",system-ui,sans-serif; font-weight:700;
-    font-size:clamp(1.5rem,4.2vw,2.75rem); line-height:1.12; color:rgb(var(--ink)); margin-top:1.05em; letter-spacing:-.005em; }
+    font-size:2.75rem; line-height:1.12; color:rgb(var(--ink)); margin-top:1.55em; letter-spacing:-.005em; }
   .talk-sub{ font-family:"Aptos","Segoe UI",system-ui,sans-serif; font-weight:500;
-    font-size:clamp(.95rem,2.1vw,1.38rem); color:rgb(var(--acc)); margin-top:.32em; }
+    font-size:1.38rem; color:rgb(var(--acc)); margin-top:.55em; }
   .talk-authors{ font-family:"Aptos","Segoe UI",system-ui,sans-serif; font-weight:600;
-    font-size:clamp(.85rem,1.8vw,1.14rem); color:rgb(var(--ink)); opacity:.92; margin-top:.95em; }
+    font-size:1.14rem; color:rgb(var(--ink)); opacity:.92; margin-top:1.4em; }
+  .talk-authors .me{ font-weight:800; }   /* el ponente en negrita, como en la contraportada */
   .talk-affil{ font-family:"Aptos","Segoe UI",system-ui,sans-serif;
-    font-size:clamp(.72rem,1.4vw,.96rem); letter-spacing:.05em; color:rgb(var(--acc2)); margin-top:.3em; }
+    font-size:.96rem; letter-spacing:.05em; color:rgb(var(--acc2)); margin-top:.55em; }
+
+  /* Logos institucionales (portada / contraportada): directos, sin recuadro,
+     igual que el resto de logos del deck (aemcco / UAL). */
+  .inst-logos{ display:flex; align-items:center; justify-content:center; gap:2.1em;
+    margin-top:1.7em; flex-wrap:wrap; }
+  .inst-logos .lchip{ display:inline-flex; align-items:center; justify-content:center; }
+  .inst-logos img{ height:42px; width:auto; display:block; }
+  .inst-logos--sm{ margin-top:1.05em; gap:1.6em; }
+  .inst-logos--sm img{ height:30px; }
 
 
-  .congress-title{ max-width:min(720px,80vw); height:auto; display:block; margin:0 auto .1em; }
+  .congress-title{ max-width:720px; height:auto; display:block; margin:0 auto .1em; }
+  /* wordmark "AEMCCO" (crop de la plantilla): continúa de forma natural el título de arriba */
+  .congress-wordmark{ display:block; height:auto; margin:.1em auto .06em; width:282px; }
 
   /* bloque de código R (slide del ritual set.seed) */
-  .rcode{ font-family:"Cascadia Code","Fira Code",Menlo,Consolas,monospace; text-align:left; display:inline-block;
-    background:#0d2233; color:#cfe3f0; border:1px solid rgba(120,180,220,.25); border-radius:12px;
-    padding:.9em 1.3em; font-size:clamp(.9rem,2vw,1.35rem); line-height:1.55; margin:.6em auto .2em;
+  /* bloque de código: mismo lenguaje que los paneles de contenido (centrado, ancho de bloque),
+     manteniendo el aspecto oscuro de "editor" sobre la slide clara. */
+  .rcode{ font-family:"Cascadia Code","Fira Code",Menlo,Consolas,monospace; text-align:left; display:block;
+    width:fit-content; max-width:1100px; box-sizing:border-box;
+    background:#0d2233; color:#cfe3f0; border:1px solid rgba(120,180,220,.25); border-radius:14px;
+    padding:1.1em 1.6em; font-size:1.35rem; line-height:1.6; margin:1em auto 0;
     box-shadow:0 18px 50px rgba(0,0,0,.28); }
   .rcode .fn{ color:#7fd0ff; } .rcode .num{ color:#e0a02f; } .rcode .op{ color:#c99; } .rcode .cm{ color:#5f88a0; font-style:italic; }
   /* listas de bullets (slide metodología) */
-  .bullets{ list-style:none; text-align:left; max-width:44ch; margin:.6em 0 0; }
-  .bullets li{ position:relative; padding-left:1.3em; margin:.55em 0; font-size:clamp(1rem,2.1vw,1.45rem); line-height:1.4; }
+  .bullets{ list-style:none; text-align:left; max-width:64ch; margin:.6em 0 0; }
+  .bullets li{ position:relative; padding-left:1.3em; margin:.55em 0; font-size:1.45rem; line-height:1.4; }
   .bullets li::before{ content:"▸"; position:absolute; left:0; color:rgb(var(--acc)); font-weight:700; }
 
-  /* cita en pie de slide — fila de referencia estilo mlv-tools:
-     barra de acento a la izquierda (como .pub-list li) + badge de tipo (.pub-type-badge).
-     Se recolorea con la profundidad vía --acc/--ink. */
-  .cite-chip{ margin-top:auto; align-self:flex-start; display:inline-flex; align-items:center; gap:.6em;
-    max-width:min(780px,88%); padding:.2em 0 .2em .66em; line-height:1.35;
-    font-size:clamp(.68rem,1.2vw,.86rem); color:rgba(var(--ink),.7);
-    border-left:2px solid rgba(var(--acc),.5); }
-  .cite-chip .cite-badge{ flex:0 0 auto; padding:.06em .42em;
-    font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace; font-size:.74em; font-weight:600;
+  /* Referencia(s) al pie del slide — SIEMPRE abajo-derecha. Una fila .cite-ref por
+     referencia (formato APA). Barra de acento + badge de tipo, estilo mlv-tools;
+     se recolorea con la profundidad vía --acc/--ink. */
+  .cite-chip{ position:absolute; right:60px; bottom:44px; z-index:5; margin:0;
+    display:flex; flex-direction:column; align-items:flex-end; gap:.5em; max-width:70%; }
+  .cite-ref{ display:flex; align-items:baseline; gap:.5em; text-align:left;
+    padding:.14em 0 .14em .64em; border-left:2px solid rgba(var(--acc),.55);
+    font-size:.78rem; line-height:1.32; color:rgba(var(--ink),.74); }
+  .cite-ref .cite-badge{ flex:0 0 auto; padding:.06em .42em;
+    font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace; font-size:.72em; font-weight:600;
     text-transform:uppercase; letter-spacing:.09em; color:rgb(var(--acc));
     border:1px solid rgba(var(--acc),.42); border-radius:3px; background:rgba(var(--acc),.08); }
-  .cite-chip i{ font-style:italic; color:rgba(var(--ink),.62); }
+  .cite-ref i{ font-style:italic; color:rgba(var(--ink),.62); }
+  /* nota a pie de slide (numerada) */
+  .fn-ref{ font-size:.62em; vertical-align:super; color:rgb(var(--acc)); font-weight:700; margin-left:.1em; }
+  .footnote{ position:absolute; left:77px; bottom:46px; max-width:82ch;
+    font-size:1.02rem; line-height:1.42; color:rgba(var(--ink),.74);
+    border-top:1px solid rgba(var(--ink),.18); padding-top:.5em; }
+  .footnote sup{ color:rgb(var(--acc)); font-weight:700; margin-right:.35em; }
 
   /* QR de mlv-tools en la contraportada (junto al mail) */
-  .qr-block{ margin-top:.7em; display:flex; flex-direction:column; align-items:center; gap:.35em; }
-  .qr-block img{ width:clamp(92px,11vw,128px); height:auto; }
-  .qr-block .qr-label{ font-size:clamp(.66rem,1.3vw,.88rem); letter-spacing:.04em; color:rgb(var(--acc)); font-weight:600; }
+  .qr-block{ margin-top:.5em; display:flex; flex-direction:column; align-items:center; gap:.3em; }
+  .qr-block img{ width:134px; height:auto; }
+  .qr-block .qr-label{ font-size:.88rem; letter-spacing:.04em; color:rgb(var(--acc)); font-weight:600; }
+  /* fila de dos QR en la contraportada (segunda portada) */
+  .end-qrs{ display:flex; justify-content:center; align-items:flex-start; gap:2.8em; margin-top:.7em; }
+  .end-qrs .qr-block{ margin-top:0; }
+  .end-qrs .qr-block img{ width:116px; }
+  .end-qrs .qr-block .qr-label{ max-width:17ch; }
+  /* mención mínima del congreso en la contraportada (sin fechas) */
+  .end-congress{ margin-top:1em; font-size:.86rem; letter-spacing:.12em; text-transform:uppercase;
+    color:rgba(var(--ink),.5); }
+  .end-congress .sep{ opacity:.5; margin:0 .5em; }
+  /* QR de seguimiento en las primeras slides — abajo-dcha; sale por el lateral en la slide 6 */
+  #deckqr{ position:absolute; right:44px; bottom:54px; z-index:6;
+    display:flex; flex-direction:column; align-items:center; gap:.45em; padding:13px 15px 15px;
+    background:rgba(255,255,255,.6); border:1px solid rgba(255,255,255,.6); border-radius:16px;
+    box-shadow:0 12px 34px rgba(20,60,90,.16); backdrop-filter:blur(4px); transition:none; }
+  #deckqr.ready{ transition:transform .6s cubic-bezier(.55,0,.2,1), opacity .5s ease; }
+  #deckqr img{ width:150px; height:150px; display:block; }
+  #deckqr .deckqr-label{ font:700 .96rem/1.2 system-ui,sans-serif; color:rgb(var(--acc)); letter-spacing:.02em; text-align:center; }
+  #deckqr.qr-out{ transform:translateX(420px); opacity:0; pointer-events:none; }
 </style>
 <link rel="stylesheet" href="assets/a11y.css"><!-- accesibilidad: contraste + tipografía legible (aditivo, carga tras los estilos) -->
 </head>
 <body>
   <canvas id="waves"></canvas>
   <div id="vignette"></div>
-  <div class="progress" id="progress"></div>
 
-  <div class="brandbar" id="brandbar">
-    <div class="brand"><img src="assets/logo-aemcco.png" alt="AEMCCO" style="height:clamp(26px,3.4vw,44px);width:auto"></div>
-    <div class="brand"><img src="assets/logo-ual.png" alt="Universidad de Almería" style="height:clamp(30px,3.8vw,50px);width:auto"></div>
+  <!-- Escenario 1280×720 escalado a la pantalla; las olas quedan detrás a pantalla completa. -->
+  <div id="scaler">
+    <div class="progress" id="progress"></div>
+
+    <div class="brandbar" id="brandbar">
+      <div class="brand"><img src="assets/logo-aemcco.png" alt="AEMCCO" style="height:44px;width:auto"></div>
+      <div class="brand"><img src="assets/logo-ual.png" alt="Universidad de Almería" style="height:49px;width:auto"></div>
+    </div>
+
+    <!-- El deck se construye desde slides.md -->
+    <div class="deck" id="deck"></div>
+
+    <div class="hud num" id="hudNum">01 / 01</div>
+    <div class="hud help" id="hudHelp">
+      <span class="key">←</span><span class="key">→</span> navegar
+      &nbsp;·&nbsp; <span class="key">F</span> pantalla completa
+    </div>
+
+    <!-- QR de seguimiento: visible en las primeras slides, sale por el lateral en la slide 6 -->
+    <div id="deckqr" aria-hidden="true">
+      <span class="deckqr-label">Esta presentación:</span>
+      <img src="assets/qr-deck.png" alt="">
+    </div>
   </div>
-
-  <!-- El deck se construye desde slides.md -->
-  <div class="deck" id="deck"></div>
 
   <!-- Opcional: pega aquí el contenido de slides.md si quieres que funcione con
        doble-clic (file://) sin servidor. Si está vacío, se carga slides.md por HTTP. -->
   <script type="text/markdown" id="slides-src"></script>
-
-  <div class="hud num" id="hudNum">01 / 01</div>
-  <div class="hud help" id="hudHelp">
-    <span class="key">←</span><span class="key">→</span> navegar
-    &nbsp;·&nbsp; <span class="key">F</span> pantalla completa
-  </div>
 
 <script src="widgets.js"></script>
 <script>
@@ -365,9 +464,11 @@
       for (const tk of opts.split(/\s+/).filter(Boolean)){
         if (tk.includes(':')){ const [k,v]=tk.split(':'); if(k==='depth') depth=v; }
         else if (tk==='nobrand') nobrand=' data-nobrand';
-        else if (tk==='wide')    wide=' style="max-width:min(1240px,95vw)"';
+        else if (tk==='wide')    wide=' style="max-width:1240px"';
         else if (tk==='void')    vd=' data-void';
         else if (tk==='center')  center=' center';
+        else if (tk==='midv')    center+=' midv';
+        else if (tk==='bodyc')   center+=' bodyc';
       }
       html += `<section class="slide${center}" data-depth="${depth}"${nobrand}${vd}><div class="wrap"${wide}>${renderBody(body)}</div></section>`;
     }
@@ -386,6 +487,7 @@
   const hudNum = document.getElementById('hudNum');
   const progress = document.getElementById('progress');
   const brandbar = document.getElementById('brandbar');
+  const deckqr = document.getElementById('deckqr');
   const vignette = document.getElementById('vignette');
 
   let idx = 0, depth = 0, depthTarget = 0;
@@ -401,6 +503,7 @@
     depthTarget = parseFloat(slides[n]?.dataset.depth || '0');
     voidTarget = slides[n]?.hasAttribute('data-void') ? 1 : 0;
     brandbar.style.setProperty('--brand-op', slides[n]?.hasAttribute('data-nobrand') ? '0' : '1');
+    if (deckqr) deckqr.classList.toggle('qr-out', n >= 4);   // visible slides 1–4 (idx 0–3); sale en la slide 5 (idx 4, donde el gag ocupa todo)
     if (slides[n]?.querySelector('#mlvFrame')) loadWidget();
     if (window.MLVWidgets) { slides.forEach(s => MLVWidgets.deactivate(s)); MLVWidgets.activate(slides[n]); }
     try { if (location.hash !== '#'+(n+1)) history.replaceState(null,'','#'+(n+1)); }
@@ -423,10 +526,34 @@
         break;
     }
   });
+  let touchNavAt = 0;
   addEventListener('click', e => {
+    if (Date.now() - touchNavAt < 600) return;                 // ya navegado por gesto táctil
     if (e.target.closest('.stage') || e.target.closest('a')) return;
     (e.clientX > innerWidth/2) ? next() : prev();
   });
+  // --- Navegación táctil (móvil/tablet): deslizar o tocar mitad izq/dcha ---
+  let tsx = 0, tsy = 0, tMoved = false;
+  addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    tsx = e.touches[0].clientX; tsy = e.touches[0].clientY; tMoved = false;
+    pokeHint();
+  }, { passive: true });
+  addEventListener('touchmove', e => {
+    const t = e.touches[0]; if (!t) return;
+    if (Math.abs(t.clientX - tsx) > 10 || Math.abs(t.clientY - tsy) > 10) tMoved = true;
+  }, { passive: true });
+  addEventListener('touchend', e => {
+    if (e.changedTouches.length !== 1) return;
+    if (e.target.closest && (e.target.closest('.stage') || e.target.closest('a'))) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - tsx, dy = t.clientY - tsy;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {     // deslizar horizontal
+      (dx < 0) ? next() : prev(); touchNavAt = Date.now(); e.preventDefault();
+    } else if (!tMoved) {                                       // toque simple → mitades
+      (t.clientX > innerWidth / 2) ? next() : prev(); touchNavAt = Date.now(); e.preventDefault();
+    }
+  }, { passive: false });
 
   let hintTimer;
   function pokeHint(){
@@ -453,18 +580,26 @@
   requestAnimationFrame(() => requestAnimationFrame(() => {
     document.getElementById('deck').classList.add('ready');
     document.getElementById('brandbar').classList.add('ready');
+    if (deckqr) deckqr.classList.add('ready');   // habilita la animación de salida solo tras el primer pintado
   }));
 
   /* ---------- Motor de olas (canvas) ---------- */
   const canvas = document.getElementById('waves');
   const ctx = canvas.getContext('2d');
+  const scaler = document.getElementById('scaler');
   let W=0,H=0,DPR=1;
+  // scale-to-fit: el escenario mide 1280×720 fijos y se escala para caber en la
+  // pantalla (siempre horizontal). Así se ve idéntico en 1080p, 1440p, 4:3…
+  function rescale(){
+    scaler.style.setProperty('--scale', Math.min(innerWidth/1280, innerHeight/720));
+  }
   function resize(){
     DPR = Math.min(devicePixelRatio||1, 2);
     W = innerWidth; H = innerHeight;
     canvas.width = W*DPR; canvas.height = H*DPR;
     canvas.style.width = W+'px'; canvas.style.height = H+'px';
     ctx.setTransform(DPR,0,0,DPR,0,0);
+    rescale();
     seedBubbles();
   }
   addEventListener('resize', resize);
@@ -485,9 +620,10 @@
     {baseY:0.63, amp:20, spread:74,  lines:20, w1:1.7, w2:3.1, s1:0.17, s2:0.11, ph:4.0, ph2:2.9},
   ];
 
-  let bubbles = [], motes = [];
+  let bubbles = [], motes = [], eyes = [];
   let seed = 12345;
   const rnd = () => (seed = (seed*1664525 + 1013904223) >>> 0) / 4294967296;
+  const eyeY = () => rnd() < 0.5 ? 0.10 + rnd()*0.32 : 0.58 + rnd()*0.31;   // arriba (0.10–0.42) o abajo (0.58–0.89), evita el texto central
   function seedBubbles(){
     bubbles = Array.from({length:52}, () => ({
       x: rnd()*W, y: rnd()*H, r: rnd()*2.2+0.5, s: rnd()*20+8, drift: rnd()*2-1, ph: rnd()*6.28
@@ -496,12 +632,39 @@
     motes = Array.from({length:44}, () => ({
       x: rnd()*W, y: rnd()*H, r: rnd()*1.6+0.4, s: rnd()*5+2, dx: rnd()*2-1, ph: rnd()*6.28
     }));
+    // campo de ojos en el abismo: POSICIONES FIJAS y SEPARADAS, tamaños variados. Cada par
+    // se queda en su sitio y PARPADEA (cierra el párpado de arriba→abajo y lo abre de abajo→arriba).
+    // repartidos por ZONAS de la pantalla (esquinas/lados, evitando el centro donde va el texto) con
+    // jitter → distribución dispersa, no alineada. Tamaños MUY variados (parecen estar a distintas distancias).
+    const zones = [[0.16,0.19],[0.83,0.15],[0.13,0.73],[0.87,0.66],[0.55,0.84]];   // TL · TR · ABAJO-IZQ · abajo-dcha · abajo-centro → cubre las 4 esquinas
+    for (let i = zones.length - 1; i > 0; i--){ const j = Math.floor(rnd()*(i+1)); const tmp = zones[i]; zones[i] = zones[j]; zones[j] = tmp; }
+    // tamaños sesgados a PEQUEÑOS (más pequeños que grandes, no lineal): 4 pequeños + 1 algo mayor
+    const sizes = [3, 3.6, 4.4, 6, 10];
+    for (let i = sizes.length - 1; i > 0; i--){ const j = Math.floor(rnd()*(i+1)); const tmp = sizes[i]; sizes[i] = sizes[j]; sizes[j] = tmp; }
+    eyes = [];
+    for (let i = 0; i < 5; i++){
+      const z = zones[i], r = sizes[i] * (0.85 + rnd()*0.3), gap = r*4.6, rx = r*1.95;
+      const mx = (gap/2 + rx)/1280 + 0.015, my = (r*0.82)/720 + 0.02;   // margen según tamaño → los grandes no se salen
+      const x = Math.max(mx, Math.min(1-mx, z[0] + (rnd()-0.5)*0.12));
+      const y = Math.max(my, Math.min(1-my, z[1] + (rnd()-0.5)*0.12));
+      eyes.push({ x, y, r, gap, period: 2.3 + rnd()*3.2, phase: rnd(),
+        blinkDur: 0.13 + rnd()*0.1 });                             // parpadeo RÁPIDO en segundos (0.13–0.23 s)
+    }
   }
 
   function draw(tms){
     const t = tms/1000;
-    depth += (depthTarget - depth) * (REDUCED ? 1 : 0.05);
-    voidAmt += (voidTarget - voidAmt) * (REDUCED ? 1 : 0.09);
+    // Al cruzar la banda de olas (~0.10–0.45) el ritmo de profundidad baja: así el buceo
+    // hacia el abismo (y la emersión de vuelta) se VEN — las olas suben despacio y pasan
+    // por encima de la cabeza antes de que caiga la oscuridad. Fuera de la banda, normal.
+    const descending = depthTarget > depth;            // bajando al abismo vs subiendo a la superficie
+    const inWaveBand = depth > 0.08 && depth < 0.58;   // banda ancha → el descenso es lento y se aprecia
+    // asimétrico: BAJA lento (se ve bucear y apagarse la luz) pero SUBE de golpe (emerges en las conclusiones)
+    depth += (depthTarget - depth) * (REDUCED ? 1 : (descending ? (inWaveBand ? 0.014 : 0.028) : 0.075));
+    // La oscuridad total NO entra de golpe: se engancha a la profundidad. Primero suben
+    // las olas; solo cuando ya estamos hundidos (depth alto) empieza a caer el negro (despacio).
+    const voidGate = voidTarget * Math.max(0, Math.min(1, (depth - 0.55) / 0.4));
+    voidAmt += (voidGate - voidAmt) * (REDUCED ? 1 : (voidGate < voidAmt ? 0.02 : 0.05));   // ZAMBULLIDA rápida (0.05) · EMERGENCIA muy gradual (0.02) → amanecer suave void→CPC18
     const d = depth;
 
     let bgTop = pal3(SURF.bgTop, MID.bgTop, DEEP.bgTop, d);
@@ -578,6 +741,29 @@
         ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 6.2832); ctx.fill();
       }
     }
+
+    // Ojos que PARPADEAN en el abismo — solo en el vacío total (voidAmt alto): un campo de
+    // pares de ojos que abren y cierran a ritmos distintos, como criaturas mirándote en la oscuridad.
+    if (voidAmt > 0.15){
+      const eyeA = Math.min(1, (voidAmt - 0.15) / 0.6);           // aparecen graduales (no de golpe) al oscurecer
+      for (const e of eyes){
+        const tcyc = (t + e.phase * e.period) % e.period;         // segundos dentro del ciclo
+        let o = 1;                                                // apertura del párpado (1=abierto, 0=cerrado)
+        if (tcyc < e.blinkDur) o = Math.abs(tcyc / e.blinkDur - 0.5) * 2;  // parpadeo RÁPIDO (1→0→1 en blinkDur seg)
+        if (o < 0.02) continue;                                    // cerrado del todo
+        const ex = e.x * W, ey = e.y * H, half = e.gap / 2, rx = e.r * 1.95, ry = e.r * 0.82;  // ojos alargados
+        const bandTop = ey - ry + (1 - o) * 2 * ry;               // el borde superior BAJA al cerrar (arriba→abajo)
+        ctx.save();
+        ctx.beginPath(); ctx.rect(ex - half - rx - 4, bandTop, e.gap + 2*rx + 8, (ey + ry) - bandTop + 1); ctx.clip();  // párpado
+        ctx.shadowColor = `rgba(130,215,255,${(0.85*eyeA).toFixed(3)})`; ctx.shadowBlur = 15;
+        ctx.fillStyle = `rgba(190,240,255,${(0.95*eyeA).toFixed(3)})`;
+        for (const sgn of [-1, 1]){ ctx.beginPath(); ctx.ellipse(ex + sgn*half, ey, rx, ry, 0, 0, 6.2832); ctx.fill(); }
+        ctx.shadowBlur = 0; ctx.fillStyle = `rgba(8,22,36,${(0.5*eyeA).toFixed(3)})`;   // pupila
+        for (const sgn of [-1, 1]){ ctx.beginPath(); ctx.ellipse(ex + sgn*half, ey, rx*0.3, ry*0.7, 0, 0, 6.2832); ctx.fill(); }
+        ctx.restore();
+      }
+    }
+
     requestAnimationFrame(draw);
   }
 

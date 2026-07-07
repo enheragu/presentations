@@ -3,155 +3,164 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Presentaciones · Enrique Heredia-Aguado</title>
-<meta name="description" content="Índice de presentaciones (decks HTML autocontenidos). Enrique Heredia-Aguado — UMH de Elche.">
+<title>Presentaciones — Enrique Heredia-Aguado</title>
+<meta name="description" content="Presentaciones y charlas en HTML autocontenido. Enrique Heredia-Aguado.">
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8ELXXMQBVQ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-8ELXXMQBVQ');
+</script>
+
+<script>
+  /* tema guardado antes de pintar (evita parpadeo) */
+  (function(){ try{ var t=localStorage.getItem('theme'); if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){} })();
+</script>
 <style>
-  /* Tokens tomados del tool-pages-theme (mismos que mlv-tools / psychometric / image-tools) */
   :root{
+    --font:"Aptos","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --radius:10px;
     --clr-bg:#f4f6f9; --clr-surface:#ffffff; --clr-border:#dde1e7;
     --clr-text:#3a4658; --clr-muted:#6e7681; --clr-primary:#2f6fdb; --clr-primary-h:#8250df;
-    --shadow:0 1px 4px rgba(0,0,0,.10); --shadow-hover:0 6px 20px rgba(0,0,0,.12);
-    --txt-lh-relaxed:1.45;
-    --font: "Aptos","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
-    --mono: ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --shadow:0 1px 4px rgba(0,0,0,.10); --shadow-hover:0 8px 26px rgba(0,0,0,.14);
   }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --clr-bg:#0d1117; --clr-surface:#161b22; --clr-border:#30363d;
-      --clr-text:#e6edf3; --clr-muted:#9aa4b0; --clr-primary:#58a6ff; --clr-primary-h:#bc8cff;
-      --shadow:0 1px 4px rgba(0,0,0,.4); --shadow-hover:0 8px 26px rgba(0,0,0,.5);
-    }
-  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+    --clr-bg:#0d1117; --clr-surface:#161b22; --clr-border:#30363d;
+    --clr-text:#e6edf3; --clr-muted:#9aa4b0; --clr-primary:#58a6ff; --clr-primary-h:#bc8cff;
+    --shadow:0 1px 4px rgba(0,0,0,.4); --shadow-hover:0 10px 30px rgba(0,0,0,.55);
+  }}
   :root[data-theme="dark"]{
     --clr-bg:#0d1117; --clr-surface:#161b22; --clr-border:#30363d;
     --clr-text:#e6edf3; --clr-muted:#9aa4b0; --clr-primary:#58a6ff; --clr-primary-h:#bc8cff;
-    --shadow:0 1px 4px rgba(0,0,0,.4); --shadow-hover:0 8px 26px rgba(0,0,0,.5);
-  }
-  :root[data-theme="light"]{
-    --clr-bg:#f4f6f9; --clr-surface:#ffffff; --clr-border:#dde1e7;
-    --clr-text:#3a4658; --clr-muted:#6e7681; --clr-primary:#2f6fdb; --clr-primary-h:#8250df;
-    --shadow:0 1px 4px rgba(0,0,0,.10); --shadow-hover:0 6px 20px rgba(0,0,0,.12);
+    --shadow:0 1px 4px rgba(0,0,0,.4); --shadow-hover:0 10px 30px rgba(0,0,0,.55);
   }
 
   *{ box-sizing:border-box; }
   html,body{ margin:0; }
-  body{
-    min-height:100vh; background:var(--clr-bg); color:var(--clr-text);
-    font-family:var(--font); line-height:1.5;
-    -webkit-font-smoothing:antialiased;
-    display:flex; flex-direction:column; align-items:center;
-    padding:clamp(2.2rem,7vh,4.5rem) 1.1rem 0;
-  }
-  .shell{ width:100%; max-width:960px; }
+  body{ background:var(--clr-bg); color:var(--clr-text); font-family:var(--font);
+    line-height:1.5; -webkit-font-smoothing:antialiased; }
 
-  /* Cabecera */
-  header{ margin-bottom:clamp(1.6rem,4vh,2.6rem); }
-  .kicker{
-    margin:0 0 .5rem; font-family:var(--mono);
-    font-size:.76rem; letter-spacing:.16em; text-transform:uppercase;
-    color:var(--clr-primary); font-weight:600;
-  }
-  h1{
-    margin:0; font-weight:700; letter-spacing:-.015em; line-height:1.08;
-    font-size:clamp(1.9rem,5.2vw,2.9rem); color:var(--clr-text);
-  }
-  h1 .dot{ color:var(--clr-primary-h); }
-  .subtitle{
-    margin:.6rem 0 0; color:var(--clr-muted);
-    font-size:clamp(.98rem,2.2vw,1.12rem); max-width:56ch;
-  }
-  .subtitle kbd{
-    font-family:var(--mono); font-size:.82em; padding:.05em .4em; margin:0 .1em;
-    border:1px solid var(--clr-border); border-bottom-width:2px; border-radius:4px;
-    background:var(--clr-surface); color:var(--clr-text);
-  }
+  .wrap{ max-width:1180px; margin:0 auto; padding:2.4rem 1.25rem 3rem; }
+  .page-title{ margin:0; font-size:1.9rem; font-weight:800; color:var(--clr-primary); letter-spacing:.01em; }
+  .page-sub{ margin:.35rem 0 1.8rem; color:var(--clr-muted); font-size:1rem; }
+  .page-sub kbd{ font-family:var(--mono); font-size:.82em; padding:.05em .4em; margin:0 .1em;
+    border:1px solid var(--clr-border); border-bottom-width:2px; border-radius:4px; background:var(--clr-surface); color:var(--clr-text); }
 
-  /* Galería (patrón .tools-grid / .tool-card del theme; cards algo más pequeñas) */
-  .tools-grid{
-    display:grid; gap:.95rem;
-    grid-template-columns:repeat(auto-fill, minmax(248px, 300px));
-    justify-content:start;
-  }
-  .tool-card{
-    display:block; text-decoration:none; color:inherit;
-    border:1px solid var(--clr-border); border-radius:10px; overflow:hidden;
-    background:var(--clr-surface); box-shadow:var(--shadow);
-    transition:transform .12s ease, border-color .12s ease, box-shadow .12s ease;
-  }
-  .tool-card:hover{ transform:translateY(-3px); border-color:var(--clr-primary); box-shadow:var(--shadow-hover); }
-  .tool-card:focus-visible{ outline:none; box-shadow:0 0 0 2px color-mix(in oklab, var(--clr-primary) 45%, transparent); }
-  .tool-cover{
-    width:100%; aspect-ratio:1200 / 630; object-fit:cover; display:block;
-    border-bottom:1px solid var(--clr-border); background:var(--clr-bg);
-  }
-  .tool-content{ padding:.72rem .8rem .82rem; }
-  .tool-meta{
-    display:flex; flex-wrap:wrap; gap:.36rem .5rem; align-items:center;
-    font-size:.72rem; color:var(--clr-muted); margin-bottom:.35rem;
-  }
-  .tool-tag{
-    font-family:var(--mono); font-size:.66rem; font-weight:600; letter-spacing:.06em;
-    text-transform:uppercase; color:var(--clr-primary);
-    padding:.08em .42em; border-radius:4px;
+  .grid{ display:grid; gap:1.1rem; grid-template-columns:repeat(auto-fill, minmax(272px, 320px)); justify-content:start; }
+  .card{ border:1px solid var(--clr-border); border-radius:var(--radius); overflow:hidden;
+    background:var(--clr-surface); box-shadow:var(--shadow); display:flex; flex-direction:column;
+    transition:transform .12s ease, border-color .12s ease, box-shadow .12s ease; }
+  .card:hover{ transform:translateY(-3px); border-color:var(--clr-primary); box-shadow:var(--shadow-hover); }
+  .cover-link{ display:block; }
+  .cover{ width:100%; aspect-ratio:16 / 9; object-fit:cover; display:block; border-bottom:1px solid var(--clr-border); background:var(--clr-bg); }
+  .card-body{ padding:.8rem .9rem 1rem; display:flex; flex-direction:column; gap:.5rem; }
+  .meta{ display:flex; flex-wrap:wrap; gap:.35rem .5rem; align-items:center; font-size:.76rem; color:var(--clr-muted); }
+  .tag{ font-family:var(--mono); font-size:.66rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--clr-primary); padding:.1em .45em; border-radius:5px;
     border:1px solid color-mix(in oklab, var(--clr-primary) 42%, var(--clr-border));
-    background:color-mix(in oklab, var(--clr-primary) 9%, var(--clr-surface));
-  }
-  .tool-title{
-    margin:0; font-size:1.02rem; font-weight:700; line-height:1.18; color:var(--clr-primary);
-  }
-  .tool-desc{
-    margin:.3rem 0 0; font-size:.86rem; color:var(--clr-muted); line-height:var(--txt-lh-relaxed);
-  }
-  .tool-desc .me{ color:var(--clr-text); font-weight:600; }
+    background:color-mix(in oklab, var(--clr-primary) 9%, var(--clr-surface)); }
+  .title{ margin:0; font-size:1.12rem; font-weight:700; line-height:1.2; }
+  .title a{ color:var(--clr-primary); text-decoration:none; }
+  .title a:hover{ text-decoration:underline; }
+  .desc{ margin:0; font-size:.92rem; color:var(--clr-muted); }
+  .desc .me{ color:var(--clr-text); font-weight:600; }
+  .actions{ display:flex; gap:.5rem; margin-top:.15rem; }
+  .btn{ font:600 .86rem var(--font); padding:.42em .95em; border-radius:8px; cursor:pointer;
+    text-decoration:none; border:1px solid var(--clr-border); background:var(--clr-surface); color:var(--clr-text);
+    transition:border-color .12s ease, background .12s ease, color .12s ease; }
+  .btn--primary{ background:var(--clr-primary); border-color:var(--clr-primary); color:#fff; }
+  .btn--primary:hover{ background:var(--clr-primary-h); border-color:var(--clr-primary-h); }
+  .btn--ghost:hover{ border-color:var(--clr-primary); color:var(--clr-primary); }
 
-  footer{
-    width:100%; max-width:960px; margin-top:auto;
-    padding:2.6rem 0 1.6rem; color:var(--clr-muted); font-size:.82rem;
-    display:flex; flex-wrap:wrap; gap:.4rem 1rem; align-items:center;
-  }
-  footer a{ color:var(--clr-primary); text-decoration:none; }
-  footer a:hover{ text-decoration:underline; }
-  .sep{ opacity:.4; }
+  /* ── Popup de abstract ── */
+  .modal[hidden]{ display:none; }
+  .modal{ position:fixed; inset:0; z-index:1000; display:flex; align-items:center; justify-content:center; padding:1.25rem; }
+  .modal-backdrop{ position:absolute; inset:0; background:rgba(10,20,35,.55); backdrop-filter:blur(2px); }
+  .modal-card{ position:relative; z-index:1; width:min(720px, 100%); max-height:88vh; overflow:auto;
+    background:var(--clr-surface); border:1px solid var(--clr-border); border-radius:14px;
+    box-shadow:0 24px 70px rgba(0,0,0,.35); padding:1.6rem 1.8rem 1.9rem; }
+  .modal-close{ position:absolute; top:.7rem; right:.8rem; width:34px; height:34px; border-radius:8px;
+    border:1px solid var(--clr-border); background:var(--clr-bg); color:var(--clr-text); cursor:pointer; font-size:1rem; }
+  .modal-close:hover{ border-color:var(--clr-primary); color:var(--clr-primary); }
+  .ab-meta{ font-size:.76rem; letter-spacing:.04em; text-transform:uppercase; color:var(--clr-muted); font-weight:600; }
+  .ab-title{ margin:.35rem 0 .1rem; font-size:1.55rem; font-weight:800; color:var(--clr-primary); line-height:1.18; }
+  .ab-sub{ font-size:1.02rem; color:var(--clr-text); font-weight:600; }
+  .ab-authors{ margin-top:.7rem; font-size:.92rem; color:var(--clr-text); }
+  .ab-affil{ font-size:.82rem; color:var(--clr-muted); margin-top:.15rem; }
+  .ab-body{ margin-top:1rem; border-top:1px solid var(--clr-border); padding-top:1rem; font-size:.98rem; line-height:1.6; }
+  .ab-body p{ margin:0 0 .8rem; }
+  .ab-body strong{ color:var(--clr-text); }
 
-  @media (max-width:560px){
-    .tools-grid{ grid-template-columns:1fr; }
-  }
+  @media (max-width:560px){ .grid{ grid-template-columns:1fr; } .modal-card{ padding:1.3rem 1.2rem; } }
 </style>
 </head>
 <body>
-  <div class="shell">
-    <header>
-      <p class="kicker">Presentaciones</p>
-      <h1>Charlas &amp; decks<span class="dot">.</span></h1>
-      <p class="subtitle">Decks en HTML autocontenido. Navega con <kbd>←</kbd> <kbd>→</kbd>, <kbd>F</kbd> para pantalla completa.</p>
-    </header>
+  <main class="wrap">
+    <h1 class="page-title">Presentaciones</h1>
+    <p class="page-sub">Charlas en HTML autocontenido — navega con <kbd>←</kbd> <kbd>→</kbd>, <kbd>F</kbd> para pantalla completa.</p>
 
-    <main>
-      <div class="tools-grid">
+    <div class="grid">
 
-        <a class="tool-card" href="2026_07_8_AEMCCO_ALMERIA/">
-          <img class="tool-cover" src="assets/covers/aemcco.png" alt="Portada del deck — Que no te engañe el azar (XIX AEMCCO)">
-          <div class="tool-content">
-            <div class="tool-meta">
-              <span class="tool-tag">Charla</span>
-              <span>7–9 Jul 2026</span><span class="sep">·</span><span>XIX AEMCCO · Almería</span>
-            </div>
-            <h3 class="tool-title">Que no te engañe el azar</h3>
-            <p class="tool-desc">Cómo impacta la aleatoriedad en el diseño de redes neuronales.
-            <span class="me">Heredia-Aguado</span>, Rujano, Valiente, Gil.</p>
-          </div>
+      <article class="card">
+        <a class="cover-link" href="2026_07_8_AEMCCO_ALMERIA/" aria-label="Abrir «Que no te engañe el azar»">
+          <img class="cover" src="assets/covers/aemcco.png" alt="Portada — Que no te engañe el azar (XIX AEMCCO)">
         </a>
+        <div class="card-body">
+          <div class="meta"><span class="tag">Charla</span><span>7–9 Jul 2026 · XIX AEMCCO · Almería</span></div>
+          <h3 class="title"><a href="2026_07_8_AEMCCO_ALMERIA/">Que no te engañe el azar</a></h3>
+          <p class="desc">Cómo impacta la aleatoriedad en el diseño de redes neuronales. <span class="me">Heredia-Aguado</span>, Rujano, Valiente, Gil.</p>
+          <div class="actions">
+            <a class="btn btn--primary" href="2026_07_8_AEMCCO_ALMERIA/">Abrir ▸</a>
+            <button class="btn btn--ghost" type="button" onclick="openAbstract('aemcco')">Abstract</button>
+          </div>
+        </div>
+      </article>
 
-      </div>
-    </main>
+    </div>
+  </main>
+
+  <!-- Popup de abstract -->
+  <div id="abstract-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="ab-title">
+      <button class="modal-close" type="button" data-close aria-label="Cerrar">✕</button>
+      <div id="abstract-body"></div>
+    </div>
   </div>
 
-  <footer>
-    <span>Enrique Heredia-Aguado — UMH de Elche</span>
-    <span class="sep">·</span>
-    <a href="https://enheragu.github.io/mlv-tools/">mlv-tools</a>
-    <span class="sep">·</span>
-    <a href="https://github.com/enheragu/presentations">GitHub</a>
-  </footer>
+  <script>
+    const ABSTRACTS = {
+      aemcco: {
+        meta: "XIX Congreso AEMCCO de Metodología de las Ciencias Sociales y de la Salud · Almería, 7–9 julio 2026",
+        title: "Que no te engañe el azar",
+        sub: "Cómo impacta la aleatoriedad en el diseño de redes neuronales",
+        authors: "Enrique Heredia-Aguado¹, Alejandro Rujano², David Valiente¹, Arturo Gil¹",
+        affil: "¹ Instituto de Investigación en Ingeniería de Elche (I3E), Universidad Miguel Hernández de Elche · ² UNED",
+        body:
+          "<p>El aprendizaje automático se usa cada vez más en psicología (generación automática de ítems, análisis de contenido para construir escalas, apoyo al diagnóstico). Evaluar y comparar modelos es, en el fondo, un proceso de <strong>medición</strong> sujeto a incertidumbre y error de medida. La aleatorización propia del diseño, el entrenamiento y la ejecución produce un rendimiento variable que <strong>interactúa</strong> con otras decisiones del modelo, por lo que conviene <strong>analizarla, no solo controlarla</strong>.</p>" +
+          "<p>En esta charla ejemplificamos, con modelos de predicción de la toma de decisiones humanas bajo riesgo (CPC18), cómo esa variabilidad afecta al <strong>diseño y la elección</strong> de modelo. El método emplea una muestra amplia de entrenamientos variando inicialización e hiperparámetros, con simulaciones de <strong>Monte Carlo y bootstrap</strong>, y estudia el efecto de los hiperparámetros, la inicialización y su <strong>interacción</strong>.</p>" +
+          "<p>Los resultados muestran que la inicialización interactúa con las variables de diseño, generando una variación desconocida a priori que puede cambiar las conclusiones. Reportar esta variabilidad mejora la toma de decisiones (menos equivocaciones al elegir modelo) y la <strong>reproducibilidad, comparabilidad y validez</strong> — algo que beneficia tanto a quien investiga como a quien consume la investigación.</p>"
+      }
+    };
+    function openAbstract(id){
+      const a = ABSTRACTS[id]; if(!a) return;
+      document.getElementById('abstract-body').innerHTML =
+        '<div class="ab-meta">' + a.meta + '</div>' +
+        '<h2 id="ab-title" class="ab-title">' + a.title + '</h2>' +
+        '<div class="ab-sub">' + a.sub + '</div>' +
+        '<div class="ab-authors">' + a.authors + '</div>' +
+        '<div class="ab-affil">' + a.affil + '</div>' +
+        '<div class="ab-body">' + a.body + '</div>';
+      const m = document.getElementById('abstract-modal');
+      m.hidden = false; document.body.style.overflow = 'hidden';
+    }
+    function closeAbstract(){ document.getElementById('abstract-modal').hidden = true; document.body.style.overflow = ''; }
+    document.addEventListener('click', function(e){ if(e.target.hasAttribute && e.target.hasAttribute('data-close')) closeAbstract(); });
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeAbstract(); });
+  </script>
 </body>
 </html>
