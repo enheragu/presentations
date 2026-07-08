@@ -56,7 +56,7 @@ Reproducible, sí. Pero, ¿controlamos lo que esa semilla **esconde**?
 ## Replicación de <span class="accent">Visión por Computador</span>
 
 
-<div class="widget" data-widget="gag-reveal" data-base="assets/captura_titulo_paper.png" data-gif="assets/amiga-soy-yo.gif" data-delay="5000" data-dur="3500"></div>
+<div class="widget" data-widget="gag-reveal" data-base="assets/captura_titulo_paper.png" data-gif="assets/amiga-soy-yo.gif" data-delay="10000" data-dur="3500"></div>
 
 ¿Replicación sobre modelos de aprendizaje en ciencias del comportamiento?
 
