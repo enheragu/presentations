@@ -150,11 +150,11 @@ Análisis:
       <rect x="133" y="6" width="64" height="26" rx="8" style="fill:rgba(var(--ink),.05);stroke:rgba(var(--ink),.3);stroke-width:1.3"/>
       <text x="165" y="23" text-anchor="middle" style="fill:rgb(var(--ink));font:600 11px system-ui">inicio</text>
       <rect x="20"  y="68" width="64" height="26" rx="8" style="fill:rgba(var(--ink),.05);stroke:rgba(var(--ink),.28);stroke-width:1.2"/>
-      <text x="52"  y="85" text-anchor="middle" style="fill:rgb(var(--ink));font:600 11px system-ui">L 1e-4</text>
+      <text x="52"  y="85" text-anchor="middle" style="fill:rgb(var(--ink));font:600 11px system-ui">L 0.0001</text>
       <rect x="133" y="68" width="64" height="26" rx="8" style="fill:rgba(var(--ink),.05);stroke:rgba(var(--ink),.28);stroke-width:1.2"/>
-      <text x="165" y="85" text-anchor="middle" style="fill:rgb(var(--ink));font:600 11px system-ui">L 1e-3</text>
+      <text x="165" y="85" text-anchor="middle" style="fill:rgb(var(--ink));font:600 11px system-ui">L 0.001</text>
       <rect x="246" y="68" width="64" height="26" rx="8" style="fill:rgba(0,158,115,.16);stroke:#009e73;stroke-width:1.7"/>
-      <text x="278" y="85" text-anchor="middle" style="fill:rgb(var(--ink));font:700 11px system-ui">L 1e-2</text>
+      <text x="278" y="85" text-anchor="middle" style="fill:rgb(var(--ink));font:700 11px system-ui">L 0.01</text>
       <rect x="23"  y="132" width="58" height="26" rx="8" style="fill:rgba(var(--ink),.05);stroke:rgba(var(--ink),.28);stroke-width:1.2"/>
       <text x="52"  y="149" text-anchor="middle" style="fill:rgb(var(--ink));font:600 11px system-ui">E 10</text>
       <rect x="136" y="132" width="58" height="26" rx="8" style="fill:rgba(0,158,115,.16);stroke:#009e73;stroke-width:1.7"/>
