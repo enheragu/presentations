@@ -21,18 +21,6 @@
 > El problema
 # La aleatoriedad afecta a los <span class="accent">resultados</span>
 
-<pre class="rcode"><span class="cm"># fijamos la semilla y respiramos tranquilos…</span>
-<span class="fn">set.seed</span>(<span class="num">42</span>)
-modelo <span class="op">&lt;-</span> <span class="fn">entrenar</span>(datos)</pre>
-
-<div style="height:1.1em"></div>
-
-Reproducible, sí. Pero, ¿controlamos lo que esa semilla **esconde**?
-
---- depth:0.08 nobrand bodyc
-> El problema
-## La semilla toca la <span class="accent">inicialización</span> y la optimización
-
 Dos ejecuciones «iguales» acaban en sitios distintos.
 
 <ul class="bullets">
@@ -40,6 +28,18 @@ Dos ejecuciones «iguales» acaban en sitios distintos.
 <li>Figuras con aspecto diferente.</li>
 <li>Modelos de aprendizaje con diferente resultado.</li>
 </ul>
+
+--- depth:0.08 nobrand bodyc
+> El problema
+## La semilla toca la <span class="accent">inicialización</span> y la optimización
+
+<pre class="rcode"><span class="cm"># fijamos la semilla y respiramos tranquilos…</span>
+<span class="fn">set.seed</span>(<span class="num">42</span>)
+modelo <span class="op">&lt;-</span> <span class="fn">entrenar</span>(datos)</pre>
+
+<div style="height:1.1em"></div>
+
+Reproducible, sí. Pero, ¿controlamos lo que esa semilla **esconde**?
 
 
 --- depth:0.11 nobrand bodyc
