@@ -548,10 +548,13 @@
   let idx = 0, depth = 0, depthTarget = 0;
   let voidAmt = 0, voidTarget = 0;           // slide "void": funde las olas a negro total
   const pad = n => String(n).padStart(2,'0');
+  let startTalkTimer = () => {};             // (re)definidos en el bloque del cronómetro
+  let resetTalkTimer = () => {};             // portada = reinicio a 0; solo corre tras salir de ella
 
   function show(n){
     n = Math.max(0, Math.min(N-1, n));
     idx = n;
+    if (n >= 1) startTalkTimer(); else resetTalkTimer();   // portada REINICIA a 0; arranca al pasar a la 1ª diapositiva
     slides.forEach((s,i)=> s.classList.toggle('active', i===n));
     hudNum.textContent = `${pad(n+1)} / ${pad(N)}`;
     progress.style.width = (N>1 ? n/(N-1)*100 : 100) + '%';
@@ -600,10 +603,12 @@
   // la visibilidad se recuerda (localStorage). Doble clic = reiniciar · tecla T = mostrar/ocultar.
   if (deckTimer) {
     if (localStorage.getItem('deckTimerHidden') === '1') deckTimer.classList.add('hidden');
-    let tStart = +sessionStorage.getItem('deckTimerStart') || 0;
-    if (!tStart) { tStart = Date.now(); sessionStorage.setItem('deckTimerStart', String(tStart)); }
+    let tStart = +sessionStorage.getItem('deckTimerStart') || 0;   // 0 = aún no arrancado
     const tfmt = ms => { const s = Math.max(0, Math.round(ms/1000)); return pad(Math.floor(s/60)) + ':' + pad(s%60); };
-    const ttick = () => { deckTimer.textContent = tfmt(Date.now() - tStart); };
+    // en la PORTADA (idx 0) o antes de arrancar → 00:00; el reloj corre solo tras salir de ella
+    const ttick = () => { deckTimer.textContent = (idx === 0 || !tStart) ? '00:00' : tfmt(Date.now() - tStart); };
+    startTalkTimer = () => { if (!tStart) { tStart = Date.now(); sessionStorage.setItem('deckTimerStart', String(tStart)); } ttick(); };
+    resetTalkTimer = () => { tStart = 0; sessionStorage.removeItem('deckTimerStart'); ttick(); };   // vuelve a 0 de verdad
     ttick(); setInterval(ttick, 1000);
     // reset por DOBLE TOQUE / doble clic (en táctil el evento dblclick no dispara de forma fiable;
     // pointerup cubre táctil, ratón y lápiz)
