@@ -26,6 +26,7 @@ Dos ejecuciones «iguales» acaban en sitios distintos.
 <ul class="bullets">
 <li>Distintos datos generados en nuestra simulación.</li>
 <li>Figuras con aspecto diferente.</li>
+<li>Algoritmos de optimización o de búsqueda</li>
 <li>Modelos de aprendizaje con diferente resultado.</li>
 </ul>
 
