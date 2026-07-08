@@ -110,7 +110,7 @@ Análisis:
   <div style="border:1.5px solid rgba(230,159,0,.7);border-radius:20px;padding:1.2em 1.9em;font-weight:700;font-size:1.75rem;color:rgb(var(--ink));background:rgba(230,159,0,.10)">SparseMLP</div>
 </div>
 
-<div style="text-align:center;color:rgba(var(--ink),.82);font-size:1.15rem;margin-top:.2em">Cada uno, <b>N entrenamientos</b> con semillas distintas <span style="opacity:.6">→ una distribución de rendimiento por modelo</span></div>
+<div style="text-align:center;color:rgba(var(--ink),.82);font-size:1.15rem;margin-top:.2em">Cada uno, <b>800 entrenamientos</b> con semillas distintas <span style="opacity:.6">→ una distribución de rendimiento por modelo</span></div>
 
 ¿Podemos decir cuál gana con **un solo entrenamiento**?
 
