@@ -30,6 +30,15 @@ Dos ejecuciones «iguales» acaban en sitios distintos.
 <li>Modelos de aprendizaje con diferente resultado.</li>
 </ul>
 
+
+--- depth:0.11 nobrand bodyc
+> El problema
+## ¿Cuánto de lo que concluimos depende del <span class="accent">azar</span>?
+
+Entrenar un modelo de aprendizaje tiene mecanismos de aleatoriedad que pueden influir en la inicialización, carga de datos, entrenamiento o funcionamiento. 
+
+Diferentes configuraciones (hiperparámetros), que no modifican el modelo en sí, también pueden afectar a los resultados o al proceso de aprendizaje.
+
 --- depth:0.08 nobrand bodyc
 > El problema
 ## La semilla toca la <span class="accent">inicialización</span> y la optimización
@@ -41,15 +50,6 @@ modelo <span class="op">&lt;-</span> <span class="fn">entrenar</span>(datos)</pr
 <div style="height:1.1em"></div>
 
 Reproducible, sí. Pero, ¿controlamos lo que esa semilla **esconde**?
-
-
---- depth:0.11 nobrand bodyc
-> El problema
-## ¿Cuánto de lo que concluimos depende del <span class="accent">azar</span>?
-
-Entrenar un modelo de aprendizaje tiene mecanismos de aleatoriedad que pueden influir en la inicialización, carga de datos, entrenamiento o funcionamiento. 
-
-Diferentes configuraciones (hiperparámetros), que no modifican el modelo en sí, también pueden afectar a los resultados o al proceso de aprendizaje.
 
 --- depth:0.14 nobrand
 > Trabajo previo
