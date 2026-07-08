@@ -355,6 +355,13 @@
       this.rowF = this.c.factors.row;                          // B (paso 2)
       this.nL = this.starts[0].step1.length;
       this.nB = this.starts[0].step2.length;
+      // ÓPTIMO REAL (menor MSE, FIJO) — verde. No cambia con el arranque: es «donde queremos llegar».
+      const go = this.c.global_optimum || {};
+      this.optCol = (go.col != null) ? go.col : 0;
+      this.optRow = (go.row != null) ? go.row : 0;
+      // arranque cuya búsqueda voraz SÍ alcanza el óptimo → origen de la ruta verde (aquí E=20)
+      this.optStart = this.starts.findIndex(s => s.win_col === this.optCol && s.win_row === this.optRow);
+      if (this.optStart < 0) this.optStart = null;
       this.SLOT = 2000; this.TWEEN = 520;                      // cada arranque ~2.0 s · tween ~0.52 s (ciclado algo más rápido)
       this._tierDelay = [140, 520, 900];                       // revelado inicial raíz → L → B
       this._buildTree();                                       // árbol fijo + enlaces SVG
@@ -364,7 +371,8 @@
       lg.innerHTML =
         `<span>MC = Monte&nbsp;Carlo</span>` +
         `<span>Boot = Bootstrap</span>` +
-        `<span><span class="sw" style="background:${colC(.92)}"></span>ruta óptima</span>` +
+        `<span><span class="sw" style="background:${colC(.92)}"></span>ruta al óptimo (menor MSE)</span>` +
+        `<span><span class="sw" style="background:${colB(.92)}"></span>dónde acaba la búsqueda</span>` +
         `<span class="tree-cycle-note">ciclando arranques</span>`;
       this.el.appendChild(lg);
       const dots = document.createElement('div'); dots.className = 'tree-dots';
@@ -456,7 +464,7 @@
     // al entrar: reinicia el revelado y el ciclo para que la animación vuelva a empezar
     onStart() {
       for (let i = 0; i < this.nodes.length; i++) {
-        this.nodes[i].el.classList.remove('is-on', 'tree-node--best', 'tree-node--active');
+        this.nodes[i].el.classList.remove('is-on', 'tree-node--best', 'tree-node--win', 'tree-node--active');
       }
       if (this.svg) this.svg.innerHTML = '';
     }
@@ -484,27 +492,32 @@
       for (let i = 0; i < this.startCards.length; i++)
         this.startCards[i].el.classList.toggle('tree-node--active', i === curIdx);
 
-      // paso 1 (L): interpola % en su sitio + verde al ganador del arranque activo
+      // paso 1 (L): interpola % en su sitio. VERDE = la L del óptimo real (fija);
+      // NARANJA = la L que elige la búsqueda de este arranque (cicla), salvo que sea la óptima.
       for (let l = 0; l < this.nL; l++) {
         const nd = this.lNodes[l];
         nd.mc.textContent = pctTxt(lerp(A.step1[l].mc, B.step1[l].mc));
         nd.bs.textContent = pctTxt(lerp(A.step1[l].bs, B.step1[l].bs));
-        nd.el.classList.toggle('tree-node--best', !!cur.step1[l].best);
+        nd.el.classList.toggle('tree-node--best', l === this.optCol);
+        nd.el.classList.toggle('tree-node--win', l !== this.optCol && l === cur.win_col);
       }
       // paso 2 (9 hojas: 3 B bajo cada L): interpola leaf[c][r] en su sitio.
-      // verde SOLO en la hoja óptima (winL, winB) del arranque vigente.
+      // VERDE = hoja óptima (menor MSE, fija) · NARANJA = donde ACABA la búsqueda vigente.
       for (let c = 0; c < this.nL; c++)
         for (let r = 0; r < this.nB; r++) {
           const nd = this.bNodes[c * this.nB + r];
           nd.mc.textContent = pctTxt(lerp(A.leaf[c][r].mc, B.leaf[c][r].mc));
           nd.bs.textContent = pctTxt(lerp(A.leaf[c][r].bs, B.leaf[c][r].bs));
-          nd.el.classList.toggle('tree-node--best', c === cur.win_col && r === cur.win_row);
+          const isOpt = (c === this.optCol && r === this.optRow);
+          nd.el.classList.toggle('tree-node--best', isOpt);
+          nd.el.classList.toggle('tree-node--win', !isOpt && c === cur.win_col && r === cur.win_row);
         }
       // puntos de ciclo
       for (let i = 0; i < this.dots.length; i++) this.dots[i].classList.toggle('on', i === curIdx);
 
-      // enlaces SVG (codos): ARRANQUE activo → 3 L · L ganadora → 3 B. Verde = ruta óptima.
-      const winL = cur.win_col;
+      // enlaces SVG (codos). VERDE = ruta FIJA al óptimo real (arranque óptimo → L óptima → hoja
+      // óptima). NARANJA = ruta que TOMA la búsqueda del arranque vigente (cicla). Resto: gris.
+      const oc = this.optCol, orow = this.optRow;
       const flow = this.flow, svg = this.svg, fr = flow.getBoundingClientRect();
       if (fr.width < 2) return;
       const W = Math.round(fr.width), H = Math.round(fr.height);
@@ -514,21 +527,25 @@
       const aT = el => { const r = el.getBoundingClientRect(); return { x: r.left - fr.left + r.width / 2, y: r.top - fr.top }; };
       const op1 = Math.max(0, Math.min(1, (dt - this._tierDelay[1]) / 300));
       const op2 = Math.max(0, Math.min(1, (dt - this._tierDelay[2]) / 300));
+      const link = (cls, op, a, b) => '<path class="' + cls + '" style="opacity:' + op.toFixed(2) + '" d="' + this._elbow(a.x, a.y, b.x, b.y) + '"/>';
       let out = '';
       if (op1 > 0) {
-        const s = aB(this.startCards[curIdx].el);              // sale del arranque ACTIVO
-        for (let l = 0; l < this.nL; l++) {
-          const t = aT(this.lNodes[l].el), best = (l === winL);
-          out += '<path class="' + (best ? 'tl-best' : 'tl-short') + '" style="opacity:' + op1.toFixed(2) + '" d="' + this._elbow(s.x, s.y, t.x, t.y) + '"/>';
-        }
+        const sa = aB(this.startCards[curIdx].el);             // arranque ACTIVO → 3 L (naranja = la que elige)
+        for (let l = 0; l < this.nL; l++)
+          out += link(l === cur.win_col ? 'tl-win' : 'tl-short', op1, sa, aT(this.lNodes[l].el));
+        // ruta ÓPTIMA fija (verde): el arranque que alcanza el óptimo → L óptima. Se dibuja al
+        // final para quedar por encima si coincide con la naranja (arranque activo = E=20).
+        if (this.optStart != null)
+          out += link('tl-best', op1, aB(this.startCards[this.optStart].el), aT(this.lNodes[oc].el));
       }
       if (op2 > 0) {
         for (let c = 0; c < this.nL; c++) {
           const s = aB(this.lNodes[c].el);
           for (let r = 0; r < this.nB; r++) {
             const t = aT(this.bNodes[c * this.nB + r].el);
-            const best = (c === winL && r === cur.win_row);
-            out += '<path class="' + (best ? 'tl-best' : 'tl-short') + '" style="opacity:' + op2.toFixed(2) + '" d="' + this._elbow(s.x, s.y, t.x, t.y) + '"/>';
+            const cls = (c === oc && r === orow) ? 'tl-best'
+              : (c === cur.win_col && r === cur.win_row) ? 'tl-win' : 'tl-short';
+            out += link(cls, op2, s, t);
           }
         }
       }
@@ -761,7 +778,8 @@
       gap:30px; min-height:392px; padding:16px 8px 12px; }
     .w-treeflow .tree-links{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:visible; }
     .w-treeflow .tree-links path{ fill:none; stroke-linecap:round; stroke-linejoin:round; transition:opacity .25s linear; }
-    .w-treeflow .tree-links .tl-best{ stroke:rgba(0,158,115,.92); stroke-width:2.8; }
+    .w-treeflow .tree-links .tl-best{ stroke:rgba(0,158,115,.95); stroke-width:2.9; }  /* verde = ruta al óptimo (fija) */
+    .w-treeflow .tree-links .tl-win{ stroke:rgba(230,159,0,.9); stroke-width:2.3; }    /* naranja = ruta de la búsqueda (cicla) */
     .w-treeflow .tree-links .tl-short{ stroke:rgba(var(--ink,20,53,67),.30); stroke-width:1.5; }
     .w-treeflow .tree-row{ position:relative; z-index:1; display:grid; grid-template-columns:repeat(3,1fr); gap:22px; align-items:center; }
     /* fila de 9 hojas (3 B bajo cada L): rejilla de 9 col + nodos compactos */
@@ -781,14 +799,18 @@
     .w-treeflow .tree-node--start{ padding:.5rem 1.3rem; min-width:134px; }
     .w-treeflow .tree-node--start.is-on{ opacity:.5; }
     .w-treeflow .tree-node--start.tree-node--active.is-on{ opacity:1; }
-    .w-treeflow .tree-node--start.tree-node--active{ border-color:rgba(0,158,115,.72);
-      background:rgba(0,158,115,.16); box-shadow:0 0 0 1px rgba(0,158,115,.3) inset, 0 0 22px rgba(0,158,115,.28); }
+    /* arranque ACTIVO = naranja (la búsqueda que estamos probando; cicla) */
+    .w-treeflow .tree-node--start.tree-node--active{ border-color:rgba(230,159,0,.75);
+      background:rgba(230,159,0,.15); box-shadow:0 0 0 1px rgba(230,159,0,.32) inset, 0 0 22px rgba(230,159,0,.26); }
     .w-treeflow .tree-node-tag{ font:600 9.5px system-ui,sans-serif; letter-spacing:.16em; text-transform:uppercase;
       color:rgba(var(--ink,20,53,67),.5); margin-bottom:2px; }
-    .w-treeflow .tree-node--start.tree-node--active .tree-node-tag{ color:rgba(0,158,115,.92); }
-    /* verde = ruta óptima (copia de .decision-node--best) */
-    .w-treeflow .tree-node--best{ border-color:rgba(0,158,115,.6); background:rgba(0,158,115,.15);
-      box-shadow:0 0 0 1px rgba(0,158,115,.26) inset; }
+    .w-treeflow .tree-node--start.tree-node--active .tree-node-tag{ color:rgba(230,159,0,.95); }
+    /* verde = óptimo real / ruta al óptimo (FIJO, no cambia con el arranque) */
+    .w-treeflow .tree-node--best{ border-color:rgba(0,158,115,.62); background:rgba(0,158,115,.15);
+      box-shadow:0 0 0 1px rgba(0,158,115,.28) inset; }
+    /* naranja = donde ACABA la búsqueda voraz de este arranque (cicla, seed-dependiente) */
+    .w-treeflow .tree-node--win{ border-color:rgba(230,159,0,.6); background:rgba(230,159,0,.14);
+      box-shadow:0 0 0 1px rgba(230,159,0,.26) inset; }
     .w-treeflow .tree-node-head{ font:700 15px system-ui,sans-serif; line-height:1.15;
       color:rgba(var(--ink,20,53,67),.96); white-space:nowrap; }
     .w-treeflow .tree-node--start .tree-node-head{ font-size:17px; }
