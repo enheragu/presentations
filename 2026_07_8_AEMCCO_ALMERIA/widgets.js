@@ -355,7 +355,7 @@
       this.rowF = this.c.factors.row;                          // B (paso 2)
       this.nL = this.starts[0].step1.length;
       this.nB = this.starts[0].step2.length;
-      this.SLOT = 2800; this.TWEEN = 560;                      // cada arranque ~2.8 s · tween ~0.56 s
+      this.SLOT = 2000; this.TWEEN = 520;                      // cada arranque ~2.0 s · tween ~0.52 s (ciclado algo más rápido)
       this._tierDelay = [140, 520, 900];                       // revelado inicial raíz → L → B
       this._buildTree();                                       // árbol fijo + enlaces SVG
 
@@ -575,12 +575,18 @@
       const b = d.baldominos; this.b = b;
       this.hib = b.higher_is_better !== false;
       this.model = b.model;
+      // valor reportado por los autores de la arquitectura (SimpleNet 99.75 % para CNN_14L).
+      // Trazable: scripts/export_presentation_data.py build_baldominos() + src/models/CNN_14L.py.
+      const R = this.model.reported;
+      this.reported = (R && typeof R.value === 'number') ? R.value : null;
+      this.repLabel = (R && R.label) || 'reportado';
       this.pub = (b.published || []).filter(p => typeof p.value === 'number');
       if (!this.model || !this.pub.length) throw new Error('baldominos incompleto');
       this.unit = b.unit || '%';
 
       // rango del eje X: cubre modelo + publicados con un pequeño margen
       const vals = this.pub.map(p => p.value).concat(this.model.band);
+      if (this.reported != null) vals.push(this.reported);
       const vlo = Math.min(...vals), vhi = Math.max(...vals), pad = (vhi - vlo) * 0.06 || 0.05;
       this.lo = vlo - pad; this.hi = vhi + pad;
 
@@ -599,7 +605,8 @@
       const lg = document.createElement('div'); lg.className = 'w-legend';
       lg.innerHTML =
         `<span><span class="sw" style="background:${colB(.95)}"></span>rango ${nm} (${inb})</span>` +
-        `<span><span class="sw" style="background:${inkC(.4)}"></span>otros (${out})</span>`;
+        `<span><span class="sw" style="background:${inkC(.4)}"></span>otros (${out})</span>` +
+        (this.reported != null ? `<span><span class="sw" style="background:#d1495b"></span>${this.repLabel} ${this.reported}%</span>` : '');
       this.el.append(lg);
     }
 
@@ -670,6 +677,16 @@
         ctx.beginPath(); ctx.moveTo(p.x, P.y); ctx.lineTo(p.x, baseY); ctx.stroke();
       }
 
+      // ---- valor REPORTADO por los autores (línea rosa; trazable: build_baldominos + CNN_14L.py) ----
+      if (this.reported != null) {
+        const xr = xv(this.reported);
+        ctx.save(); ctx.globalAlpha = lit;
+        ctx.strokeStyle = '#d1495b'; ctx.lineWidth = 2.4; ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(xr, P.y); ctx.lineTo(xr, baseY); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = '#d1495b'; ctx.font = '700 11px system-ui, sans-serif'; ctx.textAlign = 'right';
+        ctx.fillText(this.reported + '% ', xr - 3, P.y + 9);
+        ctx.restore();
+      }
       // ---- eje X ----
       ctx.strokeStyle = inkC(.35); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(P.x, baseY); ctx.lineTo(P.x + P.w, baseY); ctx.stroke();
       ctx.fillStyle = inkC(.75); ctx.font = '12px system-ui, sans-serif'; ctx.textAlign = 'center';
@@ -1018,7 +1035,7 @@
 
   // ============================================================ variance-bar (componentes de varianza por modelo)
   //  Barras horizontales apiladas (una por modelo) partidas en inicialización / orden /
-  //  interacción (% de varianza σ², efectos aleatorios). Lee anova_variance.varpct.
+  //  interacción (η² = % de la varianza observada, descriptivo). Lee anova_variance.varpct.
   class VarianceBar extends W {
     build() {
       this.el.classList.add('w-varbar');
@@ -1125,17 +1142,15 @@
       models.forEach((m, mi) => {
         const rows = V.anova[m].table;
         rows.forEach((r, ri) => {
-          const F = (r.F != null) ? r.F.toLocaleString('es-ES') : '—';
-          const p = r.p_disp || '—';
           const pc = r.pct * 100, pct = pc.toFixed(pc < 1 ? 2 : 1) + '%';
           const model = (ri === 0) ? `<td class="at-model" rowspan="${rows.length}">${pretty2(m)}</td>` : '';
           const grp = (ri === 0 && mi > 0) ? ' class="at-grp"' : '';
           body += `<tr${grp}>${model}<td class="at-src">${r.source}</td><td>${r.df}</td>` +
-            `<td>${F}</td><td>${p}</td><td class="at-eta">${pct}</td></tr>`;
+            `<td class="at-eta">${pct}</td></tr>`;
         });
       });
       return `<table class="at-var"><caption>${V.test}</caption>
-        <thead><tr><th class="at-model">Modelo</th><th class="at-src">Fuente</th><th>gl</th><th>F</th><th>p</th><th>% var (σ²)</th></tr></thead>
+        <thead><tr><th class="at-model">Modelo</th><th class="at-src">Fuente</th><th>gl</th><th class="at-eta">η² (% var)</th></tr></thead>
         <tbody>${body}</tbody></table>`;
     }
   }

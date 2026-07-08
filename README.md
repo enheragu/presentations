@@ -19,8 +19,7 @@ Navegación con flechas · `F` para pantalla completa.
 ├── slides.md                # contenido de las diapositivas (micro-markdown)
 ├── widgets.js               # widgets nativos en canvas
 ├── data/presentation.json   # datos pre-cocinados (sin cómputo en vivo)
-├── assets/                  # logos, imágenes, QR, a11y.css
-└── index_standalone.html    # versión offline de un solo archivo (opcional)
+└── assets/                  # logos, imágenes, QR, a11y.css
 ```
 
 Editar una charla: se toca `slides.md` (y, si hace falta, `widgets.js`). Ver

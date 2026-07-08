@@ -3,6 +3,7 @@
 
 # Notas del ponente (guion PRIVADO) — en Pages sería visible por URL.
 guion.md
+analisis_metodos.md
 
 # Plantillas originales (p. ej. el PNG del congreso, ~1 MB): son solo la
 # FUENTE de los recortes que ya viven en assets/. El deck NO las usa en runtime.
