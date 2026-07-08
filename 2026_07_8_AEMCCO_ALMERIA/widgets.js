@@ -664,10 +664,11 @@
       // ---- reglas verticales: resultados publicados (encima, finas) ----
       const pts = this.pub.map(p => ({ x: xv(p.value), inBand: !!p.in_band })).filter(p => p.x >= P.x - 1 && p.x <= P.x + P.w + 1);
       let shown = 0;
-      // fuera de banda → TICK CORTO gris sólido en el eje (NO altura completa, para
-      // no confundirse con las reglas naranjas que sí cruzan el histograma)
-      ctx.setLineDash([]); ctx.lineWidth = 1.4; ctx.strokeStyle = inkC(.3);
-      for (const p of pts) { if (p.inBand) continue; ctx.beginPath(); ctx.moveTo(p.x, baseY); ctx.lineTo(p.x, baseY - 30); ctx.stroke(); }
+      // fuera de banda → regla gris de ALTURA COMPLETA (como las naranjas, pero tenue):
+      // son contexto, y al ser semitransparentes la densidad se acumula donde varios
+      // modelos publicados casi coinciden (17 se apiñan en 99.67–99.79, 8 en 99.05–99.16).
+      ctx.setLineDash([]); ctx.lineWidth = 1.1; ctx.strokeStyle = inkC(.28);
+      for (const p of pts) { if (p.inBand) continue; ctx.beginPath(); ctx.moveTo(p.x, P.y); ctx.lineTo(p.x, baseY); ctx.stroke(); }
       ctx.setLineDash([]);
       // dentro de banda → regla naranja de altura completa; se enciende cuando la banda la alcanza
       for (const p of pts) {
