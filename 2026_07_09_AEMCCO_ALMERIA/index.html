@@ -1,0 +1,1095 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Herramientas estadísticas y psicométricas · XIX Congreso AEMCCO 2026</title>
+<meta name="description" content="Psychometric Tools: aplicaciones web interactivas para investigación en medición y evaluación. Demo del XIX Congreso AEMCCO (Almería, 2026) — Premio AEMCCO de divulgación y transferencia en metodología.">
+<!-- Open Graph / Twitter: miniatura al compartir el enlace -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Herramientas estadísticas y psicométricas">
+<meta property="og:description" content="Psychometric Tools — aplicaciones web interactivas para investigadores en psicología y en ingeniería. XIX Congreso AEMCCO, Almería 2026.">
+<meta property="og:url" content="https://enheragu.github.io/presentations/2026_07_09_AEMCCO_ALMERIA/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Herramientas estadísticas y psicométricas">
+<meta name="twitter:description" content="Psychometric Tools — aplicaciones web interactivas para investigadores en psicología y en ingeniería. XIX Congreso AEMCCO, Almería 2026.">
+<!-- Google tag (gtag.js) — traza también las visitas directas por QR (que no pasan por el índice) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8ELXXMQBVQ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-8ELXXMQBVQ');
+</script>
+<style>
+  /* ============================================================
+     MOTOR de la presentación (olas + navegación + estilos).
+     Normalmente NO tocas este archivo: el contenido vive en slides.md.
+     - Olas en <canvas> compartido, animación oscilante suave.
+     - "Viaje de profundidad": cada slide declara depth (0=superficie,
+       1=abismo). El motor interpola fondo, tinta y olas entre slides.
+     ============================================================ */
+
+  :root{
+    --bg-top: 244,250,253;
+    --bg-bot: 214,235,247;
+    --ink:    20,53,67;
+    --acc:    47,143,176;
+    --acc2:   142,69,133;
+    --hint:   0.55;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{
+    font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color: rgb(var(--ink));
+    background: linear-gradient(180deg, rgb(var(--bg-top)) 0%, rgb(var(--bg-bot)) 100%);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #waves{ position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; display:block; }
+  #vignette{
+    position: fixed; inset: 0; z-index: 1; pointer-events:none;
+    background: radial-gradient(120% 80% at 50% 42%, transparent 40%, rgba(0,0,0,.55) 100%);
+    opacity: 0; transition: opacity .2s linear;
+  }
+
+  /* Escenario a tamaño de DISEÑO (1280×720) escalado a la pantalla (scale-to-fit).
+     Las olas (#waves) siguen a pantalla completa DETRÁS; solo el contenido se escala,
+     así el deck se ve IDÉNTICO y llena en 1080p, 1440p, 4:3… (siempre horizontal).
+     Al ser un tamaño fijo, aquí todo va en px de diseño (nada de vw/vh). */
+  #scaler{
+    position: fixed; left:50%; top:50%;
+    width:1280px; height:720px;
+    transform: translate(-50%,-50%) scale(var(--scale,1));
+    transform-origin: center center;
+    z-index: 2;
+  }
+  /* Deck */
+  .deck{ position: absolute; inset: 0; z-index: 2; }
+  .slide{
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; justify-content: flex-start;
+    padding: 50px 77px 48px;
+    opacity: 0; transform: none;
+    transition: none;
+    pointer-events: none;
+  }
+  .slide.active{ opacity: 1; pointer-events: auto; }
+  /* SOLO cruza opacidad (sin translate/scale): así un elemento compartido entre dos slides
+     consecutivas (histograma 9↔10, recta 12↔13) se queda EXACTAMENTE en su sitio durante el
+     fundido y no hay "saltito". La transición se activa tras el primer pintado (deck.ready). */
+  .deck.ready .slide{ transition: opacity .55s ease; }
+  .wrap{ width:100%; max-width:1200px; margin:0 auto; text-align:left; }
+  .slide.center{ justify-content:center; padding-top: 62px; }
+  .slide.center .wrap{ text-align:center; }
+  /* portada = póster: congreso arriba, título+subtítulo grandes en el centro, autores+logos abajo.
+     Así el congreso/logos NO se recentran al agrandar el título; cada banda va anclada a su borde. */
+  .slide.portada{ justify-content:flex-start; }
+  .slide.portada .wrap{ flex:1 1 auto; display:flex; flex-direction:column; justify-content:space-between; align-items:center; padding:2px 0 0; }
+  .portada-top,.portada-mid,.portada-bot{ width:100%; display:flex; flex-direction:column; align-items:center; }
+  .slide.portada .portada-mid .talk-title{ margin-top:0; }
+  .slide.portada .portada-bot .talk-authors{ margin-top:0; }
+  /* contra: el título va pequeño en la banda de abajo (el centro es para Gracias+QR+contacto) */
+  .slide.portada .portada-bot .talk-title{ font-size:1.7rem; margin:0 0 .2em; }
+  .slide.portada .portada-top .end-congress{ margin-top:0; }
+  /* centra en vertical pero el texto sigue alineado a la izquierda (slides de solo texto) */
+  .slide.midv{ justify-content:center; }
+  /* en slides 'center' con kicker (p.ej. el pivote 7): el pretítulo se queda FIJO arriba
+     en su posición constante, y solo el título se centra en vertical */
+  .slide.center .kicker{ position:absolute; top:50px; left:77px; margin:0; }
+  /* 'bodyc': kicker + título arriba; el cuerpo va justo debajo con un margen extra
+     (centrarlo en vertical lo dejaba demasiado bajo y quedaba raro) */
+  .slide.bodyc .wrap > h1 + *, .slide.bodyc .wrap > h2 + *{ margin-top:1.7em; }
+  /* en slides de contenido (título arriba-izquierda) el widget ocupa el área principal,
+     pero la CAJA en sí va centrada (kicker/título quedan a la izquierda). Su ancho es
+     fijo (width:1100px en widgets.js) → todas las cajas salen iguales y centradas. */
+  .wrap > .widget{ margin-left:auto; margin-right:auto; }
+
+  /* Tipografía */
+  .kicker{
+    font-size: .95rem;
+    letter-spacing:.32em; text-transform:uppercase;
+    color: rgb(var(--acc)); font-weight:600; margin-bottom: .7em;
+  }
+  h1{ font-size: 4rem; line-height:1.05; font-weight:700; letter-spacing:-.01em; }
+  h2{ font-size: 2.9rem; line-height:1.1; font-weight:700; margin-bottom:.2em; }
+  h3.kicker{ margin-bottom:.9em; }
+  /* chip de modelo en el kicker (p.ej. Caso 2 · BourginMLP) — preserva el CamelCase */
+  .kicker .ktag{ display:inline-block; text-transform:none; letter-spacing:.01em; font-weight:700;
+    font-size:.82em; color:rgb(var(--acc)); background:rgba(45,140,180,.13);
+    border:1px solid rgba(45,140,180,.42); border-radius:999px; padding:.12em .7em;
+    margin-left:.6em; vertical-align:middle; }
+  .lead{ font-size: 1.5rem; line-height:1.5; opacity:.92; }
+  .wrap > p.lead{ max-width: 56ch; margin: .7em 0 0; }
+  .slide.center .wrap > p.lead{ margin: .9em auto 0; }
+  .accent{ color: rgb(var(--acc)); }
+  .accent2{ color: rgb(var(--acc2)); }
+  .slide-img{
+    max-width:min(940px,94%); max-height:452px; display:block;
+    margin:.9em auto 0; border-radius:14px;
+    box-shadow:0 24px 60px rgba(10,40,70,.25); background:#fff;
+  }
+
+  /* --- Portada / contraportada wordmark --- */
+  .titlebar{
+    font-size: 1.6rem;
+    letter-spacing:.14em; text-transform:uppercase; font-weight:600;
+    color: rgb(var(--acc)); line-height:1.3;
+  }
+  .wordmark{
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 7.5rem;
+    letter-spacing:.06em; font-weight:400; margin:.18em 0 .1em;
+  }
+  .wordmark .m{ color: rgb(var(--acc2)); }
+  .wordmark .t{ color: rgb(var(--acc)); }
+  .wordmark .d{ color: rgb(var(--ink)); }
+  .meta{ font-size: 1.4rem; letter-spacing:.18em; color: rgb(var(--acc)); text-transform:uppercase; }
+  .meta .sep{ opacity:.5; margin:0 .5em; }
+  .univ{ margin-top:.5em; font-size: 1rem; letter-spacing:.22em; text-transform:uppercase; opacity:.7; }
+
+  /* Logos superiores (placeholders vectoriales, sin plantitas) */
+  .brandbar{ position: absolute; top: 38px; left:0; right:0; z-index:3;
+    display:flex; justify-content:space-between; align-items:center;
+    padding: 0 64px; pointer-events:none;
+    opacity: var(--brand-op, 1); transition: none; }
+  .brandbar.ready{ transition: opacity .5s ease; }
+  .brand{ display:flex; align-items:center; gap:.55em; color: rgb(var(--ink)); }
+  .brand svg{ width: 38px; height:auto; }
+  .brand .txt{ font-size: 1rem; letter-spacing:.12em; }
+  .brand .txt small{ display:block; font-size:.72em; opacity:.7; letter-spacing:.16em; }
+
+  /* Tarjeta / columnas de contenido */
+  .card{
+    background: rgba(255,255,255,.55);
+    border: 1px solid rgba(255,255,255,.6);
+    border-radius: 18px; padding: 38px;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 20px 60px rgba(20,60,90,.12);
+  }
+  .slide[data-depth^="0.9"] .card, .slide[data-depth="1"] .card{
+    background: rgba(10,30,50,.35); border-color: rgba(120,200,255,.18);
+    box-shadow: 0 20px 60px rgba(0,0,0,.4);
+  }
+  .cols{ display:grid; grid-template-columns: repeat(3,1fr); gap: 26px; }
+  .cols .box{ text-align:left; }
+  .cols .n{ font-size: 2.6rem; font-weight:700; color: rgb(var(--acc)); }
+  .cols .k{ font-size: 1.05rem; opacity:.85; margin-top:.2em; }
+  /* Celda de la rejilla de ablación (slide Caso 2 · planteamiento) */
+  .ablcell{ width:92px; height:70px; border:1.6px solid rgba(230,159,0,.5); border-radius:11px;
+    display:flex; align-items:center; justify-content:center;
+    font:700 1.3rem system-ui; color:rgb(var(--ink)); background:rgba(230,159,0,.09); }
+
+  /* Slide del widget mlv-tools */
+  .stage{
+    width: 1200px; height: 475px;
+    border-radius: 16px; overflow:hidden; position:relative; margin-top:.4em;
+    border:1px solid rgba(120,200,255,.25);
+    box-shadow: 0 30px 80px rgba(0,0,0,.45); background: #0b1a28;
+  }
+  .stage iframe{ width:100%; height:100%; border:0; background:#0b1a28; }
+  .stage .ph{
+    position:absolute; inset:0; display:grid; place-items:center; text-align:center;
+    color:#cfe6f5; padding:2em; gap:.6em; transition:opacity .4s ease;
+    background:
+      radial-gradient(80% 60% at 50% 30%, rgba(60,150,200,.25), transparent 70%),
+      linear-gradient(180deg,#0d2236,#071522);
+  }
+  .stage .ph code{ background:rgba(255,255,255,.08); padding:.15em .5em; border-radius:6px; font-size:.85em; }
+  .stage .ph .big{ font-size: 1.7rem; font-weight:700; color:#eaf6ff; }
+
+  /* HUD */
+  .hud{ position: absolute; z-index:4; bottom: 26px; pointer-events:none;
+        color: rgb(var(--ink)); font-size:.8rem; letter-spacing:.08em; }
+  .hud.num{ right: 34px; opacity:.6; font-variant-numeric: tabular-nums; }
+  .hud.help{ left: 34px; opacity: var(--hint); transition: opacity .6s ease; }
+  .hud.timer{ top: 26px; right: 34px; bottom: auto; opacity:.5; font-variant-numeric:tabular-nums;
+    pointer-events:auto; cursor:pointer; user-select:none; }
+  .hud.timer:hover{ opacity:.9; }
+  .hud.timer.hidden{ display:none; }
+  /* franja del congreso arriba-centro: nombre + wordmark AEMCCO (M en morado, como el template),
+     compacta en 2 líneas; el color se adapta con la profundidad (--ink/--acc2). */
+  /* header de congreso: MISMA tipografía que la portada (imágenes). Dos versiones que alternan según
+     la profundidad del slide: originales teal/púrpura en slides claras, versión clara en las oscuras
+     (la máscara CSS no renderiza fiable en todos los entornos). El swap se hace en show(). */
+  /* subida y compactada para no pisar el kicker (top:50px) en los supertítulos largos */
+  .congress-strip{ position:absolute; top:5px; left:50%; transform:translateX(-50%); z-index:3;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    opacity:calc(var(--congress-op,0) * .82); pointer-events:none; transition:opacity .5s ease; }
+  .congress-strip .cs-title-img{ height:22px; width:auto; display:block; }
+  .congress-strip .cs-word-img{ height:12px; width:auto; display:block; }
+  /* pita en flor (motivo almeriense, arte original) — solo portada/contra (depth 0), abajo-izquierda */
+  .pita-plant{ position:absolute; left:2px; bottom:-20px; width:380px; z-index:0;
+    opacity:.56; pointer-events:none; }
+  .pita-plant img{ position:absolute; left:0; bottom:0; width:100%; height:auto; display:block; }
+  .pita-plant .a-base{ position:relative; }   /* la roseta (quieta) fija la altura de la caja */
+  .a-s1{ transform-origin:18.4% 58.3%; animation:swayS1 4.7s ease-in-out infinite; }
+  .a-s2{ transform-origin:41.5% 56%;   animation:swayS2 5.9s ease-in-out -1.3s infinite; }
+  .a-s3{ transform-origin:68.3% 60.1%; animation:swayS3 4.1s ease-in-out -2.7s infinite; }
+  @keyframes swayS1{ 0%,100%{ transform:rotate(-1.5deg);} 50%{ transform:rotate(1.5deg);} }
+  @keyframes swayS2{ 0%,100%{ transform:rotate(1.8deg);}  50%{ transform:rotate(-1.8deg);} }
+  @keyframes swayS3{ 0%,100%{ transform:rotate(-1.2deg);} 50%{ transform:rotate(1.3deg);} }
+  @media (prefers-reduced-motion:reduce){ .a-s1,.a-s2,.a-s3{ animation:none; } }
+  .hud .key{ display:inline-block; border:1px solid currentColor; border-radius:6px;
+    padding:.05em .45em; margin:0 .12em; opacity:.75; }
+  .progress{ position: absolute; top:0; left:0; height:3px; z-index:5;
+    width:0; background: rgb(var(--acc)); transition: width .5s ease; opacity:.85; }
+
+  @media (prefers-reduced-motion: reduce){ .slide{ transform:none; } .deck.ready .slide{ transition: opacity .2s ease; } }
+
+  /* --- contraportada (autores/afiliación/gracias/contacto) --- */
+/* ===========================================================
+   CONTRAPORTADA — espejo de la portada, versión completa.
+   ADITIVO: pegar dentro del <style> de index.html, justo tras el
+   bloque "--- Portada / contraportada wordmark ---" (línea ~96,
+   despues de .univ). No sustituye nada; solo añade clases nuevas.
+
+   Reutiliza tal cual: .titlebar  .wordmark(.t/.m/.d)  .meta(.sep)  .univ
+   Añade:              .authors  .authors .me  .affil  .contact
+                       .congress-info  y el modificador  .wordmark.thanks
+   =========================================================== */
+
+/* Autores — justo bajo el título y "un poco desplazado arriba":
+   margen superior corto para que la línea se pegue al .titlebar. */
+.authors{
+  margin-top: .3em;
+  font-size: 1.28rem;
+  line-height: 1.32;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: rgb(var(--ink));
+  opacity: .92;
+  max-width: 48ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+/* Ponente resaltado (el titular del email de contacto). */
+.authors .me{ font-weight: 800; }   /* el ponente: mismo color (negro), en negrita — sin color aparte */
+
+/* Afiliación — tipografía de apoyo, mayúsculas espaciadas en morado de
+   marca, como las líneas secundarias de la plantilla del congreso. */
+.affil{
+  margin-top: .28em;
+  font-size: .98rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgb(var(--acc2));
+  opacity: .9;
+}
+.affil .sep{ opacity: .5; margin: 0 .5em; }   /* mismo separador que .meta .sep */
+
+/* "Gracias" en grande — modificador del wordmark serif (Georgia).
+   Un punto por debajo del wordmark de portada para dejar sitio a los
+   autores arriba y a la info del congreso abajo. */
+.wordmark.thanks{
+  font-size: 4.9rem;
+  margin: .22em 0 .06em;
+  line-height: 1.08;
+}
+
+/* Email de contacto — acento teal, mismo aire que .meta pero en
+   minúsculas (nada de text-transform: es una dirección de correo). */
+.contact{
+  margin-top: .1em;
+  font-size: 1.5rem;
+  letter-spacing: .06em;
+  font-weight: 600;
+  color: rgb(var(--acc));
+}
+
+/* Info del congreso — "más abajo" (margen amplio) y "algo más grande".
+   Se prefija .deck para ganar en especificidad al suelo de tamaño que
+   assets/a11y.css impone sobre .deck .univ (si no, a11y lo pisaría). */
+.congress-info{ margin-top: .72em; }
+.deck .congress-info .meta{ font-size: 1.62rem; }
+.deck .congress-info .univ{
+  margin-top: .45em;
+  font-size: 1.18rem;
+}
+
+
+  /* --- Título/autores de la charla (portada): tipografía Aptos como la plantilla del congreso --- */
+  .talk-title{ font-family:"Aptos","Aptos Display","Segoe UI",system-ui,sans-serif; font-weight:700;
+    font-size:3.3rem; line-height:1.08; color:rgb(var(--ink)); margin-top:.8em; letter-spacing:-.005em; }
+  .talk-sub{ font-family:"Aptos","Segoe UI",system-ui,sans-serif; font-weight:500;
+    font-size:1.62rem; color:rgb(var(--acc)); margin-top:.55em; }
+  .talk-authors{ font-family:"Aptos","Segoe UI",system-ui,sans-serif; font-weight:600;
+    font-size:1.14rem; color:rgba(var(--ink),.42); margin-top:1.4em; }
+  .talk-authors .me{ font-weight:800; color:rgb(var(--ink)); }   /* el ponente resaltado; los demás en gris */
+  .talk-affil{ font-family:"Aptos","Segoe UI",system-ui,sans-serif;
+    font-size:.96rem; letter-spacing:.05em; color:rgb(var(--acc2)); margin-top:.55em; }
+
+  /* Logos institucionales (portada / contraportada): directos, sin recuadro,
+     igual que el resto de logos del deck (aemcco / UAL). */
+  .inst-logos{ display:flex; align-items:center; justify-content:center; gap:2.1em;
+    margin-top:1.7em; flex-wrap:wrap; }
+  .inst-logos .lchip{ display:inline-flex; align-items:center; justify-content:center; }
+  .inst-logos img{ height:42px; width:auto; display:block; }
+  .inst-logos--sm{ margin-top:1.05em; gap:1.6em; }
+  .inst-logos--sm img{ height:30px; }
+
+
+  .congress-title{ max-width:632px; height:auto; display:block; margin:0 auto .1em; }
+  /* wordmark "AEMCCO" (crop de la plantilla): continúa de forma natural el título de arriba */
+  .congress-wordmark{ display:block; height:auto; margin:.1em auto .06em; width:248px; }
+
+  /* bloque de código R (slide del ritual set.seed) */
+  /* bloque de código: mismo lenguaje que los paneles de contenido (centrado, ancho de bloque),
+     manteniendo el aspecto oscuro de "editor" sobre la slide clara. */
+  .rcode{ font-family:"Cascadia Code","Fira Code",Menlo,Consolas,monospace; text-align:left; display:block;
+    width:fit-content; max-width:1100px; box-sizing:border-box;
+    background:#0d2233; color:#cfe3f0; border:1px solid rgba(120,180,220,.25); border-radius:14px;
+    padding:1.1em 1.6em; font-size:1.35rem; line-height:1.6; margin:1em auto 0;
+    box-shadow:0 18px 50px rgba(0,0,0,.28); }
+  .rcode .fn{ color:#7fd0ff; } .rcode .num{ color:#e0a02f; } .rcode .op{ color:#c99; } .rcode .cm{ color:#5f88a0; font-style:italic; }
+  /* listas de bullets (slide metodología) */
+  .bullets{ list-style:none; text-align:left; max-width:64ch; margin:.6em 0 0; }
+  .bullets li{ position:relative; padding-left:1.3em; margin:.55em 0; font-size:1.45rem; line-height:1.4; }
+  .bullets li::before{ content:"▸"; position:absolute; left:0; color:rgb(var(--acc)); font-weight:700; }
+
+  /* Referencia(s) al pie del slide — SIEMPRE abajo-derecha. Una fila .cite-ref por
+     referencia (formato APA). Barra de acento + badge de tipo, estilo mlv-tools;
+     se recolorea con la profundidad vía --acc/--ink. */
+  .cite-chip{ position:absolute; right:60px; bottom:44px; z-index:5; margin:0;
+    display:flex; flex-direction:column; align-items:flex-end; gap:.5em; max-width:70%; }
+  .cite-ref{ display:flex; align-items:baseline; gap:.5em; text-align:left;
+    padding:.14em 0 .14em .64em; border-left:2px solid rgba(var(--acc),.55);
+    font-size:.78rem; line-height:1.32; color:rgba(var(--ink),.74); }
+  .cite-ref .cite-badge{ flex:0 0 auto; padding:.06em .42em;
+    font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace; font-size:.72em; font-weight:600;
+    text-transform:uppercase; letter-spacing:.09em; color:rgb(var(--acc));
+    border:1px solid rgba(var(--acc),.42); border-radius:3px; background:rgba(var(--acc),.08); }
+  .cite-ref i{ font-style:italic; color:rgba(var(--ink),.62); }
+  /* nota a pie de slide (numerada) */
+  .fn-ref{ font-size:.62em; vertical-align:super; color:rgb(var(--acc)); font-weight:700; margin-left:.1em; }
+  .footnote{ position:absolute; left:77px; bottom:46px; max-width:82ch;
+    font-size:1.02rem; line-height:1.42; color:rgba(var(--ink),.74);
+    border-top:1px solid rgba(var(--ink),.18); padding-top:.5em; }
+  .footnote sup{ color:rgb(var(--acc)); font-weight:700; margin-right:.35em; }
+
+  /* QR de mlv-tools en la contraportada (junto al mail) */
+  .qr-block{ margin-top:.5em; display:flex; flex-direction:column; align-items:center; gap:.3em; }
+  .qr-block img{ width:134px; height:auto; background:rgba(255,255,255,.93); padding:9px; border-radius:10px; }
+  .qr-block .qr-label{ font-size:.88rem; letter-spacing:.04em; color:rgb(var(--acc)); font-weight:600; }
+  /* fila de dos QR en la contraportada (segunda portada) */
+  .end-qrs{ display:flex; justify-content:center; align-items:flex-start; gap:2.8em; margin-top:.7em; }
+  .end-qrs .qr-block{ margin-top:0; }
+  .end-qrs .qr-block img{ width:116px; }
+  .end-qrs .qr-block .qr-label{ max-width:17ch; }
+  /* mención mínima del congreso en la contraportada (sin fechas) */
+  .end-congress{ margin-top:1em; font-size:.86rem; letter-spacing:.12em; text-transform:uppercase; line-height:1.6;
+    color:rgba(var(--ink),.5); }
+  .end-congress .sep{ opacity:.5; margin:0 .5em; }
+  /* QR de seguimiento en las primeras slides — abajo-dcha; sale por el lateral en la slide 6 */
+  #deckqr, #zenqr{ position:absolute; right:44px; bottom:54px; z-index:6;
+    display:flex; flex-direction:column; align-items:center; gap:.45em; padding:13px 15px 15px;
+    background:rgba(255,255,255,.93); border:1px solid rgba(255,255,255,.8); border-radius:16px;
+    box-shadow:0 12px 34px rgba(20,60,90,.16); backdrop-filter:blur(4px); transition:none; }
+  #deckqr.ready, #zenqr.ready{ transition:transform .6s cubic-bezier(.55,0,.2,1), opacity .5s ease; }
+  #deckqr img, #zenqr img{ width:150px; height:150px; display:block; }
+  #deckqr .deckqr-label, #zenqr .deckqr-label{ font:700 .96rem/1.2 system-ui,sans-serif; color:rgb(var(--acc)); letter-spacing:.02em; text-align:center; }
+  #deckqr.qr-out, #zenqr.qr-out{ transform:translateX(420px); opacity:0; pointer-events:none; }
+  #zenqr.flown .deckqr-label{ display:none; }   /* al viajar a la contra: solo el cuadro del QR, sin la etiqueta */
+
+  /* ===========================================================
+     DEMO PSYCHOMETRIC-TOOLS — clases propias de esta charla
+     (cinta de premio, QR por-slide, captura + "tour" de hover)
+     =========================================================== */
+
+  /* Cinta de premio en la portada */
+  .award-ribbon{ display:inline-flex; align-items:center; gap:.5em; margin:0 auto;
+    font-family:"Aptos","Segoe UI",system-ui,sans-serif; font-weight:700; font-size:1.06rem; letter-spacing:.01em;
+    color:rgb(var(--acc2)); background:rgba(142,69,133,.10); border:1.4px solid rgba(142,69,133,.42);
+    border-radius:999px; padding:.42em 1.15em; box-shadow:0 6px 20px rgba(20,60,90,.10); }
+  .award-ribbon .trophy{ font-size:1.15em; filter:saturate(1.1); }
+
+  /* Subtítulo/afiliación auxiliares reutilizando la voz de la portada */
+  .talk-subtitle2{ font-family:"Aptos","Segoe UI",system-ui,sans-serif; font-weight:500;
+    font-size:1.5rem; color:rgb(var(--acc)); margin-top:.5em; }
+
+  /* QR por-slide (esquina inf-dcha), reutiliza el aire del deck */
+  .slide-qr{ position:absolute; right:44px; bottom:44px; z-index:6;
+    display:flex; flex-direction:column; align-items:center; gap:.4em; padding:11px 12px 12px;
+    background:rgba(255,255,255,.93); border:1px solid rgba(255,255,255,.8); border-radius:14px;
+    box-shadow:0 12px 34px rgba(20,60,90,.16); }
+  .slide-qr img{ width:118px; height:118px; display:block; }
+  .slide-qr .qr-cap{ font:700 .8rem/1.15 system-ui,sans-serif; color:rgb(var(--acc)); letter-spacing:.02em; text-align:center; max-width:16ch; }
+  .slide-qr--big{ right:52px; bottom:52px; padding:13px 15px 15px; gap:.5em; }
+  .slide-qr--big img{ width:176px; height:176px; }
+  .slide-qr--big .qr-cap{ font-size:.98rem; }
+
+  /* Captura de herramienta + tour de hover guiado */
+  .tool-shot{ position:relative; width:fit-content; max-width:100%; height:440px; margin:.4em auto 0;
+    border-radius:14px; overflow:hidden; box-shadow:0 24px 60px rgba(10,40,70,.22);
+    border:1px solid rgba(120,160,190,.4); background:#fff; }
+  .tool-shot img.shot{ height:100%; width:auto; display:block; }
+  .tool-shot img.shot.result{ position:absolute; inset:0; height:100%; width:auto; opacity:0; transition:opacity .85s ease; }
+  .tool-shot.show-result img.shot.result{ opacity:1; }
+  .tool-shot.tall{ height:470px; }
+  .tool-shot--big{ height:552px; }   /* capturas de contenido: la interfaz manda (sin pie de figura) */
+  /* dos capturas estrechas en paralelo (p.ej. resultados de DIF-Analysis) */
+  .two-up{ display:flex; gap:1.3em; justify-content:center; align-items:flex-start; margin:.6em auto 0; max-width:1240px; }
+  .two-up .tool-shot{ width:600px; max-width:49%; height:auto; margin:0; }
+  .two-up .tool-shot img.shot{ width:100%; height:auto; }
+
+  /* QR "hero" centrado en las portadas de suite (texto encima, QR debajo) */
+  .qr-hero{ display:flex; flex-direction:column; align-items:center; gap:.5em; margin:1.35em auto 0; }
+  .qr-hero img{ width:198px; height:198px; display:block; background:#fff; padding:12px; border-radius:16px;
+    box-shadow:0 12px 34px rgba(20,60,90,.16); border:1px solid rgba(255,255,255,.85); }
+  .qr-hero .qr-cap{ font:700 1.02rem system-ui,sans-serif; color:rgb(var(--acc)); letter-spacing:.02em; }
+
+  /* linaje: dos "chips" con flecha (Psychometric Tools ▸ MLV Tools) */
+  .lineage{ display:flex; align-items:center; justify-content:center; gap:1.1em; margin:1.5em auto .2em; flex-wrap:wrap; }
+  .lineage .chip{ font-weight:800; font-size:1.7rem; letter-spacing:-.005em; padding:.5em 1.05em; border-radius:16px;
+    border:1.6px solid rgba(45,140,180,.5); background:rgba(45,140,180,.10); color:rgb(var(--acc)); }
+  .lineage .chip.mlv{ border-color:rgba(142,69,133,.5); background:rgba(142,69,133,.10); color:rgb(var(--acc2)); }
+  .lineage .arrow{ font-size:2.1rem; color:rgba(var(--ink),.45); }
+  .tool-shot .tour-spot{ position:absolute; border-radius:9px; pointer-events:none;
+    box-shadow:0 0 0 9999px rgba(8,24,36,.32); transition:all .8s cubic-bezier(.5,0,.15,1); opacity:0; }
+  .tool-shot .tour-ring{ position:absolute; border-radius:9px; pointer-events:none; border:3px solid rgb(var(--acc));
+    box-shadow:0 0 22px rgba(47,143,176,.75); transition:all .8s cubic-bezier(.5,0,.15,1); opacity:0; }
+  .tool-shot .tour-cursor{ position:absolute; width:30px; height:30px; pointer-events:none; z-index:6; margin:-4px 0 0 -4px;
+    transition:all .8s cubic-bezier(.5,0,.15,1); opacity:0; filter:drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
+  .tool-shot .tour-cursor svg{ width:100%; height:100%; display:block; }
+  .tool-shot .tour-cap{ position:absolute; z-index:7; pointer-events:none; white-space:nowrap;
+    background:rgb(var(--acc)); color:#fff; font:600 .92rem system-ui,sans-serif; padding:.26em .66em; border-radius:8px;
+    box-shadow:0 6px 18px rgba(0,0,0,.28); transition:all .8s cubic-bezier(.5,0,.15,1); opacity:0; }
+  .tool-shot.playing .tour-spot,
+  .tool-shot.playing .tour-ring,
+  .tool-shot.playing .tour-cursor,
+  .tool-shot.playing .tour-cap{ opacity:1; }
+  /* leyenda corta bajo la captura (qué estamos viendo) */
+  /* pies de figura ocultos: mostrar la herramienta manda; el ponente comenta */
+  .shot-note{ display:none; }
+
+  /* rejilla de "3 herramientas" (landing) */
+  .tool-cards{ display:grid; grid-template-columns:repeat(3,1fr); gap:1.4em; margin:1.4em auto 0; max-width:1120px; }
+  .tool-card{ text-align:left; background:rgba(255,255,255,.6); border:1px solid rgba(255,255,255,.7);
+    border-radius:16px; padding:1.1em 1.2em; box-shadow:0 14px 40px rgba(20,60,90,.12); backdrop-filter:blur(5px); }
+  .tool-card .tc-name{ font-weight:800; font-size:1.24rem; color:rgb(var(--acc)); letter-spacing:-.005em; }
+  .tool-card .tc-desc{ font-size:1.02rem; line-height:1.4; color:rgba(var(--ink),.82); margin-top:.35em; }
+</style>
+<link rel="stylesheet" href="assets/a11y.css"><!-- accesibilidad: contraste + tipografía legible (aditivo, carga tras los estilos) -->
+</head>
+<body>
+  <canvas id="waves"></canvas>
+  <!-- (la pita ahora son 4 capas PNG con oscilación CSS independiente; ya no hay filtro SVG) -->
+  <div id="vignette"></div>
+
+  <!-- Escenario 1280×720 escalado a la pantalla; las olas quedan detrás a pantalla completa. -->
+  <div id="scaler">
+    <div class="progress" id="progress"></div>
+
+    <div class="brandbar" id="brandbar">
+      <div class="brand"><img src="assets/logo-aemcco.png" alt="AEMCCO" style="height:44px;width:auto"></div>
+      <div class="brand"><img src="assets/logo-ual.png" alt="Universidad de Almería" style="height:49px;width:auto"></div>
+    </div>
+
+    <!-- El deck se construye desde slides.md -->
+    <div class="deck" id="deck"></div>
+    <!-- franja del congreso (nombre + AEMCCO): en todas las de contenido salvo el vacío; color adapta con la profundidad -->
+    <div class="congress-strip" id="congressStrip"><img class="cs-title-img" src="assets/congress-title-hdr.png" alt="XIX Congreso de Metodología de las Ciencias Sociales y de la Salud"><img class="cs-word-img" src="assets/congress-wordmark-hdr.png" alt="AEMCCO"></div>
+
+    <div class="hud num" id="hudNum">01 / 01</div>
+    <div class="hud timer" id="deckTimer" title="Cronómetro de charla · doble toque/clic = reiniciar · tecla T = mostrar/ocultar">00:00</div>
+    <div class="hud help" id="hudHelp">
+      <span class="key">←</span><span class="key">→</span> navegar
+      &nbsp;·&nbsp; <span class="key">F</span> pantalla completa
+    </div>
+
+    <!-- QR de esta presentación: visible en portada y primeras slides; sale por el lateral después -->
+    <div id="deckqr" aria-hidden="true">
+      <span class="deckqr-label">Esta presentación:</span>
+      <img src="assets/qr-deck.png" alt="">
+    </div>
+  </div>
+
+  <!-- Opcional: pega aquí el contenido de slides.md si quieres que funcione con
+       doble-clic (file://) sin servidor. Si está vacío, se carga slides.md por HTTP. -->
+  <script type="text/markdown" id="slides-src"></script>
+
+<script src="widgets.js"></script>
+<script>
+/* ============================================================
+   1) Parser mínimo de slides.md  → construye el deck
+   2) Motor de olas + navegación
+   ============================================================ */
+(async () => {
+  "use strict";
+
+  /* ---------- carga del contenido ---------- */
+  async function loadSlides(){
+    const inline = document.getElementById('slides-src');
+    if (inline && inline.textContent.trim()) return inline.textContent;  // modo offline
+    try{
+      const r = await fetch('slides.md', {cache:'no-cache'});
+      if (r.ok) return await r.text();
+      throw 0;
+    }catch(_){
+      document.getElementById('deck').innerHTML =
+        '<section class="slide active"><div class="wrap"><h2>Sirve la carpeta por HTTP</h2>'+
+        '<p class="lead">El navegador no deja leer <code>slides.md</code> con doble-clic '+
+        '(<code>file://</code>). Ábrelo con el servidor local — '+
+        '<code>localhost:8000/presentations/…</code> — o en GitHub Pages. '+
+        '(Alternativa: pega el markdown en el <code>&lt;script id="slides-src"&gt;</code>).</p></div></section>';
+      return null;
+    }
+  }
+
+  /* ---------- markdown mínimo (con paso de HTML crudo) ---------- */
+  const inline = s => s
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img class="slide-img" alt="$1" src="$2">')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
+
+  function renderText(block){
+    let out='', para=[];
+    const flush = () => { if(para.length){ out += `<p class="lead">${inline(para.join(' '))}</p>`; para=[]; } };
+    for (const raw of block.split('\n')){
+      const s = raw.trim();
+      if (/^# /.test(s))        { flush(); out += `<h1>${inline(s.slice(2))}</h1>`; }
+      else if (/^## /.test(s))  { flush(); out += `<h2>${inline(s.slice(3))}</h2>`; }
+      else if (/^### /.test(s)) { flush(); out += `<h3 class="kicker">${inline(s.slice(4))}</h3>`; }
+      else if (/^> /.test(s))   { flush(); out += `<div class="kicker">${inline(s.slice(2))}</div>`; }
+      else if (/^!\[[^\]]*\]\([^)]+\)$/.test(s)) { flush(); out += inline(s); } // imagen sola
+      else if (s) para.push(s);
+      else flush();
+    }
+    flush();
+    return out;
+  }
+
+  function renderBody(body){
+    let out='';
+    for (let block of body.replace(/\r/g,'').split(/\n[ \t]*\n/)){
+      block = block.replace(/^\n+|\n+$/g,'');
+      if (!block.trim()) continue;
+      if (block.trimStart().startsWith('<')) out += block;   // HTML crudo tal cual
+      else out += renderText(block);
+    }
+    return out;
+  }
+
+  function buildDeck(md){
+    md = md.replace(/\x3c!--[\s\S]*?--\x3e/g, '');           // fuera comentarios (escapes: evita <!-- --> literal en <script>)
+    const parts = md.split(/^---[ \t]*(.*)$/m);               // [preámbulo, opts, body, opts, body, ...]
+    let html='';
+    for (let i=1; i<parts.length; i+=2){
+      const opts = (parts[i]||'').trim();
+      const body = parts[i+1] || '';
+      let depth='0', nobrand='', wide='', vd='', center='', zqr='', adv='';
+      for (const tk of opts.split(/\s+/).filter(Boolean)){
+        if (tk.includes(':')){ const [k,v]=tk.split(':'); if(k==='depth') depth=v; else if(k==='adv') adv=v; }
+        else if (tk==='nobrand') nobrand=' data-nobrand';
+        else if (tk==='wide')    wide=' style="max-width:1240px"';
+        else if (tk==='void')    vd=' data-void';
+        else if (tk==='center')  center=' center';
+        else if (tk==='midv')    center+=' midv';
+        else if (tk==='bodyc')   center+=' bodyc';
+        else if (tk==='portada') center+=' portada';
+        else if (tk==='zenqr')   zqr=' data-zenqr';
+      }
+      const advA = adv ? ` data-adv="${adv}"` : '';
+      html += `<section class="slide${center}" data-depth="${depth}"${nobrand}${vd}${zqr}${advA}><div class="wrap"${wide}>${renderBody(body)}</div></section>`;
+    }
+    document.getElementById('deck').innerHTML = html || '';
+  }
+
+  /* ---------- arranque ---------- */
+  const md = await loadSlides();
+  if (md === null) return;
+  buildDeck(md);
+  if (window.MLVWidgets) { await MLVWidgets.load(); MLVWidgets.mountAll(document.getElementById('deck')); }
+
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const slides = [...document.querySelectorAll('.slide')];
+  const N = slides.length || 1;
+  const hudNum = document.getElementById('hudNum');
+  const progress = document.getElementById('progress');
+  const brandbar = document.getElementById('brandbar');
+  const deckqr = document.getElementById('deckqr');
+  const zenqr = document.getElementById('zenqr');
+  const vignette = document.getElementById('vignette');
+  const deckTimer = document.getElementById('deckTimer');
+  const congressStrip = document.getElementById('congressStrip');
+
+  let idx = 0, depth = 0, depthTarget = 0;
+  let voidAmt = 0, voidTarget = 0;           // slide "void": funde las olas a negro total
+  const pad = n => String(n).padStart(2,'0');
+  let startTalkTimer = () => {};             // (re)definidos en el bloque del cronómetro
+  let resetTalkTimer = () => {};             // portada = reinicio a 0; solo corre tras salir de ella
+
+  function show(n){
+    n = Math.max(0, Math.min(N-1, n));
+    idx = n;
+    if (n >= 1) startTalkTimer(); else resetTalkTimer();   // portada REINICIA a 0; arranca al pasar a la 1ª diapositiva
+    slides.forEach((s,i)=> s.classList.toggle('active', i===n));
+    hudNum.textContent = `${pad(n+1)} / ${pad(N)}`;
+    progress.style.width = (N>1 ? n/(N-1)*100 : 100) + '%';
+    depthTarget = parseFloat(slides[n]?.dataset.depth || '0');
+    voidTarget = slides[n]?.hasAttribute('data-void') ? 1 : 0;
+    brandbar.style.setProperty('--brand-op', slides[n]?.hasAttribute('data-nobrand') ? '0' : '1');
+    if (deckqr) deckqr.classList.toggle('qr-out', n >= 2);   // visible en portada y hero (idx 0–1); sale antes de la landing (las capturas anchas llegan al borde)
+    if (zenqr) {   // QR de Zenodo: badge abajo-dcha en recurso+conclusiones; en la contra el CUADRO viaja a su sitio y se queda (el QR destino #zenqrHome está oculto)
+      const sl = slides[n];
+      const home = (sl && !sl.hasAttribute('data-zenqr')) ? sl.querySelector('#zenqrHome') : null;
+      if (sl?.hasAttribute('data-zenqr')) {              // slides 20–21: badge normal abajo-dcha (con etiqueta)
+        zenqr.classList.remove('qr-out', 'flown'); zenqr.style.transform = ''; zenqr.style.opacity = ''; zenqr.style.pointerEvents = '';
+      } else if (home) {                                 // contra: el cuadro viaja hasta el sitio de «Gracias» y se queda como QR final
+        zenqr.classList.remove('qr-out'); zenqr.classList.add('flown');   // 'flown' quita la etiqueta → solo viaja el cuadro
+        zenqr.style.transition = 'none'; zenqr.style.transform = ''; zenqr.style.opacity = '1'; zenqr.style.pointerEvents = 'none';
+        void zenqr.offsetWidth;                          // reflow: parte de la esquina, ya sin etiqueta
+        const zr = zenqr.getBoundingClientRect(), s = (zr.width / zenqr.offsetWidth) || 1;
+        const hr = home.getBoundingClientRect();
+        const sc = hr.width / zr.width;                        // encaja el cuadro en el hueco del QR destino (sin taparle la etiqueta DOI)
+        const dx = ((hr.left + hr.width / 2) - (zr.left + zr.width / 2)) / s;
+        const dy = ((hr.top + hr.height / 2) - (zr.top + zr.height / 2)) / s;
+        zenqr.style.transition = ''; void zenqr.offsetWidth;   // re-activa la transición (.ready) → anima el trayecto
+        zenqr.style.transformOrigin = 'center center';
+        zenqr.style.transform = `translate(${dx}px, ${dy}px) scale(${sc})`;   // se queda (opacity 1) como QR final; #zenqrHome sigue oculto
+      } else {                                           // resto: fuera por la derecha
+        zenqr.classList.add('qr-out'); zenqr.classList.remove('flown'); zenqr.style.transform = ''; zenqr.style.opacity = ''; zenqr.style.pointerEvents = '';
+      }
+    }
+    if (congressStrip) congressStrip.style.setProperty('--congress-op',
+      (slides[n]?.hasAttribute('data-nobrand') && !slides[n]?.hasAttribute('data-void')) ? '1' : '0');   // franja del congreso: todas las de contenido menos el vacío
+    if (congressStrip){   // tipografía del congreso en dos versiones: original (slides claras) / clara (oscuras)
+      const lite = parseFloat(slides[n]?.dataset.depth || '0') < 0.3;
+      const t = congressStrip.querySelector('.cs-title-img'), w = congressStrip.querySelector('.cs-word-img');
+      if (t) t.src = lite ? 'assets/congress-title.png' : 'assets/congress-title-hdr.png';
+      if (w) w.src = lite ? 'assets/congress-wordmark.png' : 'assets/congress-wordmark-hdr.png';
+    }
+    if (slides[n]?.querySelector('#mlvFrame')) loadWidget();
+    if (window.MLVWidgets) { slides.forEach(s => MLVWidgets.deactivate(s)); MLVWidgets.activate(slides[n]); }
+    try { if (location.hash !== '#'+(n+1)) history.replaceState(null,'','#'+(n+1)); }
+    catch(_) { try { location.hash = '#'+(n+1); } catch(__){} }
+  }
+  const next = () => show(idx+1);
+  const prev = () => show(idx-1);
+
+  // Cronómetro de charla: el tiempo transcurrido PERSISTE entre refrescos (sessionStorage);
+  // la visibilidad se recuerda (localStorage). Doble clic = reiniciar · tecla T = mostrar/ocultar.
+  if (deckTimer) {
+    if (localStorage.getItem('deckTimerHidden') === '1') deckTimer.classList.add('hidden');
+    let tStart = +sessionStorage.getItem('deckTimerStart') || 0;   // 0 = aún no arrancado
+    const tfmt = ms => { const s = Math.max(0, Math.round(ms/1000)); return pad(Math.floor(s/60)) + ':' + pad(s%60); };
+    // en la PORTADA (idx 0) o antes de arrancar → 00:00; el reloj corre solo tras salir de ella
+    const ttick = () => { deckTimer.textContent = (idx === 0 || !tStart) ? '00:00' : tfmt(Date.now() - tStart); };
+    startTalkTimer = () => { if (!tStart) { tStart = Date.now(); sessionStorage.setItem('deckTimerStart', String(tStart)); } ttick(); };
+    resetTalkTimer = () => { tStart = 0; sessionStorage.removeItem('deckTimerStart'); ttick(); };   // vuelve a 0 de verdad
+    ttick(); setInterval(ttick, 1000);
+    // reset por DOBLE TOQUE / doble clic (en táctil el evento dblclick no dispara de forma fiable;
+    // pointerup cubre táctil, ratón y lápiz)
+    let lastTap = 0;
+    deckTimer.addEventListener('pointerup', () => {
+      const now = Date.now();
+      if (now - lastTap < 380) { tStart = Date.now(); sessionStorage.setItem('deckTimerStart', String(tStart)); ttick(); lastTap = 0; }
+      else lastTap = now;
+    });
+  }
+
+  addEventListener('keydown', e => {
+    switch(e.key){
+      case 'ArrowRight': case 'ArrowDown': case 'PageDown': case ' ':
+        e.preventDefault(); next(); break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp':
+        e.preventDefault(); prev(); break;
+      case 'Home': show(0); break;
+      case 'End': show(N-1); break;
+      case 't': case 'T':
+        if (deckTimer){ const h = deckTimer.classList.toggle('hidden'); try{ localStorage.setItem('deckTimerHidden', h ? '1' : '0'); }catch(_){} }
+        break;
+      case 'f': case 'F':
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+        else document.exitFullscreen?.();
+        break;
+    }
+  });
+  let touchNavAt = 0;
+  addEventListener('click', e => {
+    if (Date.now() - touchNavAt < 600) return;                 // ya navegado por gesto táctil
+    if (e.target.closest('.stage') || e.target.closest('a') || e.target.closest('.hud') || e.target.closest('#deckqr') || e.target.closest('#zenqr')) return;
+    (e.clientX > innerWidth/2) ? next() : prev();
+  });
+  // --- Navegación táctil (móvil/tablet): deslizar o tocar mitad izq/dcha ---
+  let tsx = 0, tsy = 0, tMoved = false;
+  addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    tsx = e.touches[0].clientX; tsy = e.touches[0].clientY; tMoved = false;
+    pokeHint();
+  }, { passive: true });
+  addEventListener('touchmove', e => {
+    const t = e.touches[0]; if (!t) return;
+    if (Math.abs(t.clientX - tsx) > 10 || Math.abs(t.clientY - tsy) > 10) tMoved = true;
+  }, { passive: true });
+  addEventListener('touchend', e => {
+    if (e.changedTouches.length !== 1) return;
+    if (e.target.closest && (e.target.closest('.stage') || e.target.closest('a') || e.target.closest('.hud') || e.target.closest('#deckqr') || e.target.closest('#zenqr'))) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - tsx, dy = t.clientY - tsy;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {     // deslizar horizontal
+      (dx < 0) ? next() : prev(); touchNavAt = Date.now(); e.preventDefault();
+    } else if (!tMoved) {                                       // toque simple → mitades
+      (t.clientX > innerWidth / 2) ? next() : prev(); touchNavAt = Date.now(); e.preventDefault();
+    }
+  }, { passive: false });
+
+  let hintTimer;
+  function pokeHint(){
+    document.documentElement.style.setProperty('--hint','0.55');
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(()=>document.documentElement.style.setProperty('--hint','0'), 4000);
+  }
+  addEventListener('keydown', pokeHint); addEventListener('mousemove', pokeHint); pokeHint();
+
+  function loadWidget(){
+    const f = document.getElementById('mlvFrame');
+    if (!f || f.src) return;
+    f.src = f.dataset.src;
+    f.addEventListener('load', () => {
+      const ph = document.getElementById('mlvPlaceholder');
+      if (ph) ph.style.opacity = '0';
+    });
+  }
+
+  const start = parseInt((location.hash||'').slice(1),10);
+  show(Number.isFinite(start) && start>=1 && start<=N ? start-1 : 0);
+  // Activa las transiciones SOLO tras el primer pintado (doble rAF): así el slide
+  // inicial se pinta ya nítido a opacidad 1 (transition:none) y no arranca un fade a medias.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.getElementById('deck').classList.add('ready');
+    document.getElementById('brandbar').classList.add('ready');
+    if (deckqr) deckqr.classList.add('ready');   // habilita la animación de salida solo tras el primer pintado
+    if (zenqr) zenqr.classList.add('ready');
+  }));
+
+  /* ---------- Motor de olas (canvas) ---------- */
+  const canvas = document.getElementById('waves');
+  const ctx = canvas.getContext('2d');
+  const scaler = document.getElementById('scaler');
+  let W=0,H=0,DPR=1;
+  // scale-to-fit: el escenario mide 1280×720 fijos y se escala para caber en la
+  // pantalla (siempre horizontal). Así se ve idéntico en 1080p, 1440p, 4:3…
+  function rescale(){
+    scaler.style.setProperty('--scale', Math.min(innerWidth/1280, innerHeight/720));
+  }
+  function resize(){
+    DPR = Math.min(devicePixelRatio||1, 2);
+    W = innerWidth; H = innerHeight;
+    canvas.width = W*DPR; canvas.height = H*DPR;
+    canvas.style.width = W+'px'; canvas.style.height = H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    rescale();
+    seedBubbles();
+  }
+  addEventListener('resize', resize);
+
+  const SURF = { bgTop:[244,250,253], bgBot:[214,235,247], ink:[20,53,67],   acc:[47,143,176],  acc2:[142,69,133], wave:[103,170,208], hi:[212,236,248] };
+  const MID  = { bgTop:[20,78,110],   bgBot:[7,38,60],     ink:[214,236,245], acc:[90,195,230],  acc2:[180,135,205], wave:[80,170,210],  hi:[160,228,255] };
+  const DEEP = { bgTop:[10,40,62],    bgBot:[1,6,12],      ink:[214,236,245], acc:[69,200,240],  acc2:[185,138,208], wave:[46,120,150],  hi:[110,220,255] };
+  const lerp = (a,b,t)=>a+(b-a)*t;
+  const mix  = (c1,c2,t)=>[lerp(c1[0],c2[0],t),lerp(c1[1],c2[1],t),lerp(c1[2],c2[2],t)];
+  const pal3 = (a,b,c,t)=> t<0.5 ? mix(a,b,t*2) : mix(b,c,(t-0.5)*2);
+  const css  = c => `${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])}`;
+
+  depth = parseFloat(slides[idx]?.dataset.depth || '0');
+
+  //  Repartidas en NIVELES DE PROFUNDIDAD: fondo (alto, fino, tenue → a=opacidad baja) hasta
+  //  primer plano (bajo, marcado, cresta grande → a=1). El escalón de a + amp da la sensación
+  //  de capas/profundidad del template, no una sola banda.
+  const RIBBONS = [
+    {baseY:0.50, amp:13, spread:64,  lines:16, w1:2.0, w2:3.6, s1:0.17, s2:0.12, ph:3.3, ph2:1.2, a:0.28},
+    {baseY:0.585,amp:17, spread:86,  lines:18, w1:1.7, w2:3.0, s1:0.14, s2:0.10, ph:0.7, ph2:4.1, a:0.42},
+    {baseY:0.665,amp:21, spread:106, lines:20, w1:1.45,w2:2.6, s1:0.14, s2:0.09, ph:4.0, ph2:2.9, a:0.58},
+    {baseY:0.74, amp:27, spread:130, lines:24, w1:1.25,w2:2.3, s1:0.12, s2:0.08, ph:5.2, ph2:3.4, a:0.78},
+    {baseY:0.815,amp:34, spread:116, lines:20, w1:1.1, w2:2.0, s1:0.10, s2:0.07, ph:2.0, ph2:0.5, a:1.0, purple:1},
+    {baseY:0.895,amp:41, spread:100, lines:16, w1:1.0, w2:1.8, s1:0.09, s2:0.06, ph:1.1, ph2:4.6, a:1.0},
+  ];
+
+  let bubbles = [], motes = [], eyes = [];
+  let seed = 12345;
+  const rnd = () => (seed = (seed*1664525 + 1013904223) >>> 0) / 4294967296;
+  const eyeY = () => rnd() < 0.5 ? 0.10 + rnd()*0.32 : 0.58 + rnd()*0.31;   // arriba (0.10–0.42) o abajo (0.58–0.89), evita el texto central
+  function seedBubbles(){
+    bubbles = Array.from({length:52}, () => ({
+      x: rnd()*W, y: rnd()*H, r: rnd()*2.2+0.5, s: rnd()*20+8, drift: rnd()*2-1, ph: rnd()*6.28
+    }));
+    // "marine snow": motas muy tenues a la deriva → sensación de estar buceando
+    motes = Array.from({length:44}, () => ({
+      x: rnd()*W, y: rnd()*H, r: rnd()*1.6+0.4, s: rnd()*5+2, dx: rnd()*2-1, ph: rnd()*6.28
+    }));
+    // campo de ojos en el abismo: POSICIONES FIJAS y SEPARADAS, tamaños variados. Cada par
+    // se queda en su sitio y PARPADEA (cierra el párpado de arriba→abajo y lo abre de abajo→arriba).
+    // repartidos por ZONAS de la pantalla (esquinas/lados, evitando el centro donde va el texto) con
+    // jitter → distribución dispersa, no alineada. Tamaños MUY variados (parecen estar a distintas distancias).
+    const zones = [[0.16,0.19],[0.83,0.15],[0.13,0.73],[0.87,0.66],[0.55,0.84]];   // TL · TR · ABAJO-IZQ · abajo-dcha · abajo-centro → cubre las 4 esquinas
+    for (let i = zones.length - 1; i > 0; i--){ const j = Math.floor(rnd()*(i+1)); const tmp = zones[i]; zones[i] = zones[j]; zones[j] = tmp; }
+    // tamaños sesgados a PEQUEÑOS (más pequeños que grandes, no lineal): 4 pequeños + 1 algo mayor
+    const sizes = [3, 3.6, 4.4, 6, 10];
+    for (let i = sizes.length - 1; i > 0; i--){ const j = Math.floor(rnd()*(i+1)); const tmp = sizes[i]; sizes[i] = sizes[j]; sizes[j] = tmp; }
+    eyes = [];
+    for (let i = 0; i < 5; i++){
+      const z = zones[i], r = sizes[i] * (0.85 + rnd()*0.3), gap = r*4.6, rx = r*1.95;
+      const mx = (gap/2 + rx)/1280 + 0.015, my = (r*0.82)/720 + 0.02;   // margen según tamaño → los grandes no se salen
+      const x = Math.max(mx, Math.min(1-mx, z[0] + (rnd()-0.5)*0.12));
+      const y = Math.max(my, Math.min(1-my, z[1] + (rnd()-0.5)*0.12));
+      eyes.push({ x, y, r, gap, period: 2.3 + rnd()*3.2, phase: rnd(),
+        blinkDur: 0.13 + rnd()*0.1 });                             // parpadeo RÁPIDO en segundos (0.13–0.23 s)
+    }
+  }
+
+  function draw(tms){
+    const t = tms/1000;
+    // Al cruzar la banda de olas (~0.10–0.45) el ritmo de profundidad baja: así el buceo
+    // hacia el abismo (y la emersión de vuelta) se VEN — las olas suben despacio y pasan
+    // por encima de la cabeza antes de que caiga la oscuridad. Fuera de la banda, normal.
+    const descending = depthTarget > depth;            // bajando al abismo vs subiendo a la superficie
+    const inWaveBand = depth > 0.08 && depth < 0.58;   // banda ancha → el descenso es lento y se aprecia
+    // asimétrico: BAJA lento (se ve bucear y apagarse la luz) pero SUBE de golpe (emerges en las conclusiones)
+    depth += (depthTarget - depth) * (REDUCED ? 1 : (descending ? (inWaveBand ? 0.014 : 0.028) : 0.075));
+    // La oscuridad total NO entra de golpe: se engancha a la profundidad. Primero suben
+    // las olas; solo cuando ya estamos hundidos (depth alto) empieza a caer el negro (despacio).
+    const voidGate = voidTarget * Math.max(0, Math.min(1, (depth - 0.55) / 0.4));
+    voidAmt += (voidGate - voidAmt) * (REDUCED ? 1 : (voidGate < voidAmt ? 0.02 : 0.05));   // ZAMBULLIDA rápida (0.05) · EMERGENCIA muy gradual (0.02) → amanecer suave void→CPC18
+    const d = depth;
+    // PROFUNDIDAD VISUAL: la superficie (d<=0.22: slides de intro y cierre) se queda CLARA y con las
+    // olas ABAJO; el oscurecimiento y la subida de olas ocurren DE GOLPE al bucear (d>0.22 → vacío).
+    // El ascenso (d>=0.35) queda idéntico (dv==d ahí). Así la intro ya no se oscurece poco a poco.
+    const dv = d <= 0.22 ? 0 : (d < 0.35 ? (d - 0.22) / 0.13 * 0.35 : d);
+
+    let bgTop = pal3(SURF.bgTop, MID.bgTop, DEEP.bgTop, dv);
+    let bgBot = pal3(SURF.bgBot, MID.bgBot, DEEP.bgBot, dv);
+    if (voidAmt > 0.001){ bgTop = mix(bgTop,[0,0,0],voidAmt); bgBot = mix(bgBot,[0,0,0],voidAmt); }
+    document.body.style.background = `linear-gradient(180deg, rgb(${css(bgTop)}) 0%, rgb(${css(bgBot)}) 100%)`;
+    const root = document.documentElement.style;
+    const inkT = Math.min(1, Math.max(0, (dv - 0.25) / 0.10));   // tinta oscura en superficie, clara al bucear (profundidad VISUAL dv)
+    root.setProperty('--ink',  css(mix(SURF.ink, DEEP.ink, inkT)));
+    root.setProperty('--acc',  css(pal3(SURF.acc,  MID.acc,  DEEP.acc,  dv)));
+    root.setProperty('--acc2', css(pal3(SURF.acc2, MID.acc2, DEEP.acc2, dv)));
+    // panel de widgets: claro en slides claras, oscuro en oscuras
+    const panelT = Math.min(1, Math.max(0, (dv - 0.22) / 0.16));
+    root.setProperty('--panel-bg', `rgba(${css(mix([234,243,250],[10,24,38], panelT))},.66)`);
+    root.setProperty('--panel-bd', `rgba(${css(mix([120,160,190],[150,190,220], panelT))},.30)`);
+    vignette.style.opacity = Math.max(0,(dv-0.35))/0.65 * 0.9;
+
+    ctx.clearRect(0,0,W,H);
+    const waveRGB = pal3(SURF.wave, MID.wave, DEEP.wave, dv);
+    const hiRGB   = pal3(SURF.hi,   MID.hi,   DEEP.hi,   dv);
+    // Las olas SOLO existen cerca de la superficie (d < ~0.25). Bajo el agua no hay olas:
+    // el ascenso es agua que se aclara poco a poco; al final "sacas la cabeza" y aparecen de golpe.
+    let surf = Math.max(0, Math.min(1, (0.35 - dv) / 0.28));  // olas visibles en superficie; desaparecen al bucear
+    surf = surf * surf * (3 - 2 * surf);                    // smoothstep → aparición/desaparición suave
+    // Portada y contraportada (depth ~0): olas MÁS intensas (como la plantilla) → sube opacidad,
+    // amplitud y grosor SOLO muy cerca de la superficie; las slides de intro (0.05+) quedan igual.
+    const surfaceBoost = 1 + 1.35 * Math.max(0, (0.05 - d) / 0.05);
+    const globalA = Math.min(1, 0.9 * surf * (1 - voidAmt) * surfaceBoost);
+    const glow    = 0;                                       // sin neón; olas de superficie, azul suave
+    // Portada/contra (d≈0): olas ALTAS y extendidas (como la plantilla). Intro/cierre (d 0.05–0.22):
+    // olas ABAJO para que se lea el contenido. Al bucear (d>0.22): suben y desaparecen.
+    const waveCenter = d < 0.05  ? lerp(0.66, 0.90, d / 0.05)
+                     : d <= 0.22 ? 0.90
+                     :             lerp(0.90, -0.25, Math.min(1, (d - 0.22) / 0.20));
+    for (const r of RIBBONS){
+      const effBaseY = (waveCenter + (r.baseY - 0.72)) * H;
+      const amp    = r.amp * surfaceBoost;
+      const spread = r.spread;
+      const step   = 14;
+      for (let li=0; li<r.lines; li++){
+        const f = r.lines>1 ? li/(r.lines-1) : 0.5;
+        const edge = Math.abs(f-0.5)*2, coreT = 1-edge;
+        const lineA = (0.08 + 0.92*coreT) * globalA * (r.a != null ? r.a : 1);
+        if (lineA < 0.02) continue;
+        const col = mix(r.purple ? [132,116,182] : waveRGB, hiRGB, coreT*0.7);
+        ctx.strokeStyle = `rgba(${css(col)},${lineA.toFixed(3)})`;
+        ctx.lineWidth = 1 + 0.6 * (surfaceBoost - 1);
+        if (glow>0){ ctx.shadowColor = `rgba(${css(hiRGB)},.8)`; ctx.shadowBlur = glow*coreT; }
+        else ctx.shadowBlur = 0;
+        ctx.beginPath();
+        for (let px=-20; px<=W+20; px+=step){
+          const u = px/W;
+          const thick = spread * (0.35 + 0.65*Math.abs(Math.sin(u*Math.PI*0.8 + r.ph)));
+          const y = effBaseY
+                  + Math.sin(u*Math.PI*r.w1 + t*r.s1*6 + r.ph)  * amp
+                  + Math.sin(u*Math.PI*r.w2 - t*r.s2*6 + r.ph2) * amp*0.55
+                  + (f-0.5)*thick;
+          (px<=-20) ? ctx.moveTo(px,y) : ctx.lineTo(px,y);
+        }
+        ctx.stroke();
+      }
+    }
+    ctx.shadowBlur = 0;
+
+    if (d>0.35 && voidAmt<0.99){
+      const ba = Math.min(1,(d-0.35)/0.5) * (1-voidAmt);
+      // marine snow: motas tenues a la deriva (continuidad de "estar buceando", sin distraer)
+      ctx.fillStyle = `rgba(${css(hiRGB)},${(0.07*ba).toFixed(3)})`;
+      for (const m of motes){
+        m.y += m.s * 0.012;
+        m.x += Math.sin(t*0.4 + m.ph) * 0.22 * m.dx;
+        if (m.y > H+8){ m.y = -8; m.x = rnd()*W; }
+        ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, 6.2832); ctx.fill();
+      }
+      // burbujas que ascienden despacio
+      ctx.fillStyle = `rgba(${css(hiRGB)},${(0.16*ba).toFixed(3)})`;
+      for (const b of bubbles){
+        b.y -= b.s * 0.016;
+        b.x += Math.sin(t*0.6 + b.ph) * 0.3 * b.drift;
+        if (b.y < -10){ b.y = H+10; b.x = rnd()*W; }
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 6.2832); ctx.fill();
+      }
+    }
+
+    // Ojos que PARPADEAN en el abismo — solo en el vacío total (voidAmt alto): un campo de
+    // pares de ojos que abren y cierran a ritmos distintos, como criaturas mirándote en la oscuridad.
+    if (voidAmt > 0.15){
+      const eyeA = Math.min(1, (voidAmt - 0.15) / 0.6);           // aparecen graduales (no de golpe) al oscurecer
+      for (const e of eyes){
+        const tcyc = (t + e.phase * e.period) % e.period;         // segundos dentro del ciclo
+        let o = 1;                                                // apertura del párpado (1=abierto, 0=cerrado)
+        if (tcyc < e.blinkDur) o = Math.abs(tcyc / e.blinkDur - 0.5) * 2;  // parpadeo RÁPIDO (1→0→1 en blinkDur seg)
+        if (o < 0.02) continue;                                    // cerrado del todo
+        const ex = e.x * W, ey = e.y * H, half = e.gap / 2, rx = e.r * 1.95, ry = e.r * 0.82;  // ojos alargados
+        const bandTop = ey - ry + (1 - o) * 2 * ry;               // el borde superior BAJA al cerrar (arriba→abajo)
+        ctx.save();
+        ctx.beginPath(); ctx.rect(ex - half - rx - 4, bandTop, e.gap + 2*rx + 8, (ey + ry) - bandTop + 1); ctx.clip();  // párpado
+        ctx.shadowColor = `rgba(130,215,255,${(0.85*eyeA).toFixed(3)})`; ctx.shadowBlur = 15;
+        ctx.fillStyle = `rgba(190,240,255,${(0.95*eyeA).toFixed(3)})`;
+        for (const sgn of [-1, 1]){ ctx.beginPath(); ctx.ellipse(ex + sgn*half, ey, rx, ry, 0, 0, 6.2832); ctx.fill(); }
+        ctx.shadowBlur = 0; ctx.fillStyle = `rgba(8,22,36,${(0.5*eyeA).toFixed(3)})`;   // pupila
+        for (const sgn of [-1, 1]){ ctx.beginPath(); ctx.ellipse(ex + sgn*half, ey, rx*0.3, ry*0.7, 0, 0, 6.2832); ctx.fill(); }
+        ctx.restore();
+      }
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  resize();
+  requestAnimationFrame(draw);
+})();
+</script>
+<script>
+/* ============================================================
+   TOUR de hover sobre capturas (.tool-shot): un foco + anillo + cursor
+   recorren las zonas relevantes (.hs) y, si hay imagen .result, se hace
+   crossfade al resultado tras la primera pasada. Se reinicia al volver
+   al slide. Todo pre-cocinado: no computa nada, solo anima.
+   ============================================================ */
+(function(){
+  var CURSOR = '<svg viewBox="0 0 24 24"><path d="M4 2 L4 20 L9 15 L12.4 22 L15.2 20.8 L11.8 14 L19 14 Z" '
+             + 'fill="#fff" stroke="#12303c" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+  function initTour(el){
+    var hs = [].slice.call(el.querySelectorAll('.hs')).map(function(h){
+      return { x:+h.dataset.x, y:+h.dataset.y, w:+h.dataset.w, h:+h.dataset.h, label:h.dataset.label||'' };
+    });
+    el.querySelectorAll('.hs').forEach(function(h){ h.remove(); });
+    if(!hs.length) return;
+    var spot=document.createElement('div'); spot.className='tour-spot';
+    var ring=document.createElement('div'); ring.className='tour-ring';
+    var cur =document.createElement('div'); cur.className='tour-cursor'; cur.innerHTML=CURSOR;
+    var cap =document.createElement('div'); cap.className='tour-cap';
+    el.appendChild(spot); el.appendChild(ring); el.appendChild(cur); el.appendChild(cap);
+    var hasResult = !!el.querySelector('img.shot.result');
+    /* pre-coloca en el primer hotspot SIN transición → no entra volando desde 0,0 */
+    [spot,ring,cur,cap].forEach(function(n){ n.style.transition='none'; });
+    place(hs[0]); void el.offsetWidth;
+    [spot,ring,cur,cap].forEach(function(n){ n.style.transition=''; });
+    var dwell = +el.dataset.dwell || 1900;
+    function place(s){
+      [spot,ring].forEach(function(n){ n.style.left=s.x+'%'; n.style.top=s.y+'%'; n.style.width=s.w+'%'; n.style.height=s.h+'%'; });
+      cur.style.left=(s.x+s.w*0.80)+'%'; cur.style.top=(s.y+s.h*0.66)+'%';
+      cap.textContent=s.label;
+      cap.style.display = s.label ? '' : 'none';
+      /* etiqueta SIEMPRE dentro de la imagen (overflow:hidden la recortaría):
+         debajo del recuadro por defecto; si no cabe, encima; si tampoco, dentro. */
+      cap.style.left=(s.x)+'%'; cap.style.top=''; cap.style.bottom='';
+      if (s.y + s.h <= 86)  cap.style.top = 'calc('+(s.y+s.h)+'% + .35em)';
+      else if (s.y >= 10)   cap.style.bottom = 'calc('+(100-s.y)+'% + .35em)';
+      else { cap.style.top = 'calc('+s.y+'% + .5em)'; cap.style.left = 'calc('+s.x+'% + .5em)'; }
+    }
+    var i=-1, loops=0, timer=null, running=false;
+    function step(){
+      i++;
+      if(i>=hs.length){ i=0; loops++;
+        if(hasResult && loops>=1){ el.classList.add('show-result'); el.classList.remove('playing'); running=false; return; }
+      }
+      place(hs[i]);
+      timer=setTimeout(step, dwell);
+    }
+    function start(){ if(running) return; running=true; i=-1; loops=0;
+      el.classList.remove('show-result'); el.classList.add('playing'); step(); }
+    function stop(){ running=false; if(timer) clearTimeout(timer);
+      el.classList.remove('playing','show-result'); }
+    var slide = el.closest('.slide');
+    if(slide){
+      new MutationObserver(function(){ slide.classList.contains('active') ? start() : stop(); })
+        .observe(slide,{attributes:true,attributeFilter:['class']});
+      if(slide.classList.contains('active')) start();
+    } else { start(); }
+  }
+  /* Imágenes MUY anchas (aspecto > hueco/altura): la caja fija de 552px las
+     recortaba por la derecha (overflow:hidden) y desalineaba los hotspots.
+     Ajusta la ALTURA de la caja para que la imagen quepa entera a lo ancho. */
+  function fitShot(el){
+    var img = el.querySelector('img.shot'); if(!img || el.closest('.two-up')) return;
+    function fit(){
+      if(!img.naturalWidth) return;
+      var avail = el.parentElement.clientWidth;
+      var maxH = parseFloat(getComputedStyle(el).height) || 552;
+      var h = Math.min(maxH, avail * img.naturalHeight / img.naturalWidth);
+      el.style.height = h + 'px';
+    }
+    if (img.complete) fit(); else img.addEventListener('load', fit);
+  }
+  function initAll(){ document.querySelectorAll('.tool-shot').forEach(function(el){
+    if(!el.dataset.tourInit){ el.dataset.tourInit='1'; fitShot(el); initTour(el); } }); }
+  var tries=0, iv=setInterval(function(){
+    if(document.querySelector('.tool-shot') || ++tries>80){ clearInterval(iv); initAll(); }
+  },150);
+})();
+</script>
+<script>
+/* ============================================================
+   AUTO-AVANCE OPCIONAL (tecla A). Recorre los slides usando la
+   duración data-adv de cada uno (por defecto 10 s). No fuerza nada:
+   arranca/para con A y se detiene al llegar al final (adv:0). El
+   ponente mantiene control manual con las flechas en todo momento.
+   ============================================================ */
+(function(){
+  var AUTO=false, timer=null, toast=null;
+  function flash(msg){
+    if(!toast){ toast=document.createElement('div'); toast.style.cssText=
+      'position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:50;'+
+      'background:rgba(20,53,67,.92);color:#eaf6ff;font:600 .82rem system-ui,sans-serif;'+
+      'padding:.42em .95em;border-radius:999px;opacity:0;transition:opacity .3s;pointer-events:none;';
+      document.body.appendChild(toast); }
+    toast.textContent=msg; toast.style.opacity='1';
+    clearTimeout(flash._t); flash._t=setTimeout(function(){ toast.style.opacity='0'; }, 1500);
+  }
+  function cur(){ return document.querySelector('.slide.active'); }
+  function schedule(){
+    if(timer){ clearTimeout(timer); timer=null; }
+    if(!AUTO) return;
+    var s=cur(); if(!s) return;
+    var secs=parseFloat(s.dataset.adv||'')||10;
+    if(secs<=0){ AUTO=false; flash('Auto ⏹ · fin'); return; }   // adv:0 = última, no avanzar
+    timer=setTimeout(function(){
+      var a=[].slice.call(document.querySelectorAll('.slide')), i=a.indexOf(cur());
+      if(i>=a.length-1){ AUTO=false; flash('Auto ⏹ · fin'); return; }
+      window.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));
+    }, secs*1000);
+  }
+  (function watch(){ var d=document.getElementById('deck'); if(!d){ setTimeout(watch,200); return; }
+    new MutationObserver(function(){ if(AUTO) schedule(); })
+      .observe(d,{attributes:true,subtree:true,attributeFilter:['class']}); })();
+  window.addEventListener('keydown',function(e){
+    if(e.key==='a'||e.key==='A'){ AUTO=!AUTO; flash(AUTO?'Auto ▶ reproduciendo':'Auto ⏸ pausado'); schedule(); }
+  });
+})();
+</script>
+</body>
+</html>

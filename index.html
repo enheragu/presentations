@@ -106,6 +106,21 @@
     <div class="grid">
 
       <article class="card">
+        <a class="cover-link" href="2026_07_09_AEMCCO_ALMERIA/" aria-label="Abrir «Herramientas estadísticas y psicométricas»">
+          <img class="cover" src="assets/covers/aemcco-premio.png" alt="Portada — Herramientas estadísticas y psicométricas (Premio AEMCCO)">
+        </a>
+        <div class="card-body">
+          <div class="meta"><span class="tag">Premio</span><span>9 Jul 2026 · XIX AEMCCO · Almería</span></div>
+          <h3 class="title"><a href="2026_07_09_AEMCCO_ALMERIA/">Herramientas estadísticas y psicométricas</a></h3>
+          <p class="desc">Demo del Premio AEMCCO de divulgación y transferencia en metodología: Psychometric Tools y MLV Tools. <span class="me">Rujano</span>, Heredia-Aguado.</p>
+          <div class="actions">
+            <a class="btn btn--primary" href="2026_07_09_AEMCCO_ALMERIA/">Abrir ▸</a>
+            <button class="btn btn--ghost" type="button" onclick="openAbstract('aemccoPremio')">Abstract</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
         <a class="cover-link" href="2026_07_8_AEMCCO_ALMERIA/" aria-label="Abrir «Que no te engañe el azar»">
           <img class="cover" src="assets/covers/aemcco.png" alt="Portada — Que no te engañe el azar (XIX AEMCCO)">
         </a>
@@ -134,6 +149,17 @@
 
   <script>
     const ABSTRACTS = {
+      aemccoPremio: {
+        meta: "XIX Congreso AEMCCO de Metodología de las Ciencias Sociales y de la Salud · Almería, 9 julio 2026 · Premio AEMCCO de divulgación y transferencia en metodología",
+        title: "Herramientas estadísticas y psicométricas",
+        sub: "para investigadores en ciencias del comportamiento y en ingeniería",
+        authors: "Alejandro Rujano¹, Enrique Heredia-Aguado²",
+        affil: "¹ Universidad Nacional de Educación a Distancia (UNED) · ² Instituto de Investigación en Ingeniería de Elche (I3E), Universidad Miguel Hernández de Elche",
+        body:
+          "<p>Demostración breve de las aplicaciones web reconocidas con el premio. <strong>Psychometric Tools</strong> reúne tres herramientas que responden a preguntas metodológicas concretas de la medición: sesgo de selección de países en muestras transnacionales (C-NRSBTool), detección del funcionamiento diferencial del ítem con Mantel–Haenszel y TSW (DIF-AnalysisTool), y simulación de cómo pequeños efectos DIF se acumulan en la puntuación total (DIF-AccumulationTool).</p>" +
+          "<p>Del tema común de estas herramientas deriva <strong>MLV Tools</strong>, que traslada las mismas preguntas de medición a los modelos de aprendizaje automático: distribuciones de rendimiento en repeticiones, inversión de rankings, ablaciones bajo varianza y protocolos de comparación estandarizados.</p>" +
+          "<p>Todo funciona en el navegador, sin instalar nada y con datos de ejemplo. Zenodo: 10.5281/zenodo.19163768 (Psychometric Tools) · 10.5281/zenodo.20268237 (MLV Tools).</p>"
+      },
       aemcco: {
         meta: "XIX Congreso AEMCCO de Metodología de las Ciencias Sociales y de la Salud · Almería, 7–9 julio 2026",
         title: "Que no te engañe el azar",

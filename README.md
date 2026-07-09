@@ -9,6 +9,7 @@ Navegación con flechas · `F` para pantalla completa.
 
 | Fecha | Congreso | Título | Deck |
 |-------|----------|--------|------|
+| 9 Jul 2026 | XIX AEMCCO · Almería · **Premio AEMCCO de divulgación y transferencia en metodología** | *Herramientas estadísticas y psicométricas para investigadores en ciencias del comportamiento y en ingeniería* | [`2026_07_09_AEMCCO_ALMERIA/`](2026_07_09_AEMCCO_ALMERIA/) · [online](https://enheragu.github.io/presentations/2026_07_09_AEMCCO_ALMERIA/) |
 | 7–9 Jul 2026 | XIX AEMCCO · Almería | *Que no te engañe el azar: cómo impacta la aleatoriedad en el diseño de redes neuronales* | [`2026_07_8_AEMCCO_ALMERIA/`](2026_07_8_AEMCCO_ALMERIA/) · [online](https://enheragu.github.io/presentations/2026_07_8_AEMCCO_ALMERIA/) |
 
 ## Estructura de un deck

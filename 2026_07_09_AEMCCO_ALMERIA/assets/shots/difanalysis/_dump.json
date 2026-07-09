@@ -1,0 +1,212 @@
+{
+  "mh": [
+    {
+      "item": "I1",
+      "or": "1.073",
+      "chi2": "0.213",
+      "p_raw": "0.6446",
+      "p_adj": "1.0000",
+      "flag": "Invariant",
+      "variant": false
+    },
+    {
+      "item": "I2",
+      "or": "0.934",
+      "chi2": "0.186",
+      "p_raw": "0.6660",
+      "p_adj": "1.0000",
+      "flag": "Invariant",
+      "variant": false
+    },
+    {
+      "item": "I3",
+      "or": "0.153",
+      "chi2": "229.058",
+      "p_raw": "0.0000",
+      "p_adj": "0.0000",
+      "flag": "Variant",
+      "variant": true
+    },
+    {
+      "item": "I4",
+      "or": "1.927",
+      "chi2": "38.231",
+      "p_raw": "6.29e-10",
+      "p_adj": "6.29e-9",
+      "flag": "Variant",
+      "variant": true
+    },
+    {
+      "item": "I5",
+      "or": "1.545",
+      "chi2": "3.040",
+      "p_raw": "0.0812",
+      "p_adj": "0.8123",
+      "flag": "Invariant",
+      "variant": false
+    },
+    {
+      "item": "I6",
+      "or": "1.150",
+      "chi2": "1.185",
+      "p_raw": "0.2763",
+      "p_adj": "1.0000",
+      "flag": "Invariant",
+      "variant": false
+    },
+    {
+      "item": "I7",
+      "or": "0.399",
+      "chi2": "27.292",
+      "p_raw": "1.75e-7",
+      "p_adj": "1.75e-6",
+      "flag": "Variant",
+      "variant": true
+    },
+    {
+      "item": "I8",
+      "or": "1.274",
+      "chi2": "1.096",
+      "p_raw": "0.2952",
+      "p_adj": "1.0000",
+      "flag": "Invariant",
+      "variant": false
+    },
+    {
+      "item": "I9",
+      "or": "0.898",
+      "chi2": "0.567",
+      "p_raw": "0.4514",
+      "p_adj": "1.0000",
+      "flag": "Invariant",
+      "variant": false
+    },
+    {
+      "item": "I10",
+      "or": "0.758",
+      "chi2": "3.651",
+      "p_raw": "0.0560",
+      "p_adj": "0.5604",
+      "flag": "Invariant",
+      "variant": false
+    }
+  ],
+  "tsw": [
+    {
+      "item": "I1",
+      "tail": [
+        "2",
+        "0.6081",
+        "-4.66",
+        "Invariant"
+      ],
+      "variant": false
+    },
+    {
+      "item": "I2",
+      "tail": [
+        "2",
+        "0.6081",
+        "-4.86",
+        "Invariant"
+      ],
+      "variant": false
+    },
+    {
+      "item": "I3",
+      "tail": [
+        "2",
+        "2.73e-25",
+        "108.85",
+        "Variant"
+      ],
+      "variant": true
+    },
+    {
+      "item": "I4",
+      "tail": [
+        "2",
+        "0.2820",
+        "-2.76",
+        "Variant"
+      ],
+      "variant": true
+    },
+    {
+      "item": "I5",
+      "tail": [
+        "2",
+        "0.9391",
+        "-7.34",
+        "Invariant"
+      ],
+      "variant": false
+    },
+    {
+      "item": "I6",
+      "tail": [
+        "2",
+        "0.0001",
+        "14.03",
+        "Variant"
+      ],
+      "variant": true
+    },
+    {
+      "item": "I7",
+      "tail": [
+        "2",
+        "0.9391",
+        "-6.55",
+        "Variant"
+      ],
+      "variant": true
+    },
+    {
+      "item": "I8",
+      "tail": [
+        "2",
+        "0.9934",
+        "-8.86",
+        "Invariant"
+      ],
+      "variant": false
+    },
+    {
+      "item": "I9",
+      "tail": [
+        "2",
+        "1.37e-10",
+        "40.94",
+        "Variant"
+      ],
+      "variant": true
+    },
+    {
+      "item": "I10",
+      "tail": [
+        "2",
+        "0.0256",
+        "2.34",
+        "Invariant"
+      ],
+      "variant": false
+    }
+  ],
+  "testlevel": {
+    "STDS": "0.705",
+    "UTDS": "0.719",
+    "UETSDS": "0.705",
+    "ETSSD": "1.016",
+    "Starks.DTFR": "0.654",
+    "UDTFR": "0.654",
+    "UETSDN": "0.654",
+    "Test D-max": "0.719 (θ=-1.27)"
+  },
+  "latent": "Focal group latent distribution: μ = -1.516, σ = 0.578",
+  "notes": {
+    "mh": "Converged after 6 iteration(s).",
+    "tsw": "Converged after 0 iteration(s)."
+  },
+  "simStatus": "Done in 317.5s."
+}
