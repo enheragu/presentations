@@ -20,11 +20,28 @@ Navegación con flechas · `F` para pantalla completa.
 ├── slides.md                # contenido de las diapositivas (micro-markdown)
 ├── widgets.js               # widgets nativos en canvas
 ├── data/presentation.json   # datos pre-cocinados (sin cómputo en vivo)
+├── slides.pdf               # versión descargable (generada, no se edita)
 └── assets/                  # logos, imágenes, QR, a11y.css
 ```
 
 Editar una charla: se toca `slides.md` (y, si hace falta, `widgets.js`). Ver
 la cabecera de `slides.md` para la sintaxis de diapositivas y widgets.
+
+## PDF descargable
+
+`build_pdf.py` (compartido, en esta carpeta) genera el `slides.pdf` de cada
+deck: una página por slide con las animaciones en su estado final y **texto
+seleccionable** (print-to-PDF de Chromium, no screenshots), comprimido con
+Ghostscript. El botón «PDF ⤓» del índice enlaza a ese archivo.
+
+```sh
+../.venv/bin/python build_pdf.py            # todas las charlas
+../.venv/bin/python build_pdf.py 2026_07_8_AEMCCO_ALMERIA   # solo una
+```
+
+Tras editar `slides.md` hay que regenerar el PDF (y el standalone) y
+commitearlos. Requiere el `.venv` del workspace (playwright + pypdf),
+un Chromium del sistema y `gs`.
 
 ## Publicación (GitHub Pages)
 
