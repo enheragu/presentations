@@ -18,8 +18,20 @@
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
+  // Consent Mode: cookies denied until accepted via the shared banner (ePrivacy/AEPD)
+  gtag('consent', 'default', {
+    'analytics_storage': 'denied',
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied'
+  });
   gtag('js', new Date());
   gtag('config', 'G-8ELXXMQBVQ');
+</script>
+<!-- Shared consent banner (tool-pages-theme). If unavailable, analytics stays cookieless. -->
+<script src="https://enheragu.github.io/tool-pages-theme/assets/shared/consent-banner.js"></script>
+<script>
+  if (window.SharedConsentBanner) { window.SharedConsentBanner.init(); }
 </script>
 <style>
   /* ============================================================
